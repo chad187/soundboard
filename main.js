@@ -1,22 +1,97 @@
 // Modules to control application life and create native browser window
+const electron = require('electron')
 const {app, BrowserWindow} = require('electron')
+const Positioner = require('electron-positioner')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+let rightBar
+let leftBar
+let bottomBar
+let topBar
 
 function createWindow () {
   // Create the browser window.
+  const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize
+  let smallWidth = Math.floor(width * .05)
+  let smallHeight = Math.floor(height * .07)
+  let bottomWidth = width - 2 * smallWidth 
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
     webPreferences: {
       nodeIntegration: true
-    }
+    },
+    transparent:true,
+    frame: false,
+    show: false
   })
+
+  rightBar = new BrowserWindow({
+    parent: mainWindow,
+    webPreferences: {
+      nodeIntegration: true
+    },
+    width: smallWidth,
+    height: height,
+    frame: false
+  })
+
+  leftBar = new BrowserWindow({
+    parent:mainWindow,
+    webPreferences: {
+      nodeIntegration: true
+    },
+    width: smallWidth,
+    height: height,
+    frame: false
+  })
+
+  bottomBar = new BrowserWindow({
+    parent: mainWindow,
+    webPreferences: {
+      nodeIntegration: true
+    },
+    width: bottomWidth,
+    height: smallHeight,
+    frame: false
+  })
+
+  topBar = new BrowserWindow({
+    parent: mainWindow,
+    webPreferences: {
+      nodeIntegration: true
+    },
+    width: bottomWidth,
+    height: smallHeight,
+    frame: false
+  })
+
+  rightBar.loadURL('file://' + __dirname + '/rightBar.html')
+  leftBar.loadURL('file://' + __dirname + '/leftBar.html')
+  topBar.loadURL('file://' + __dirname + '/topBar.html')
+  bottomBar.loadURL('file://' + __dirname + '/bottomBar.html')
+
+  mainWindow.setAlwaysOnTop(true, 'screen');
+  rightBar.setAlwaysOnTop(true, 'screen');
+  leftBar.setAlwaysOnTop(true, 'screen');
+  topBar.setAlwaysOnTop(true, 'screen');
+  bottomBar.setAlwaysOnTop(true, 'screen');
+
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
+  mainWindow.maximize()
+
+  let rightPositioner = new Positioner(rightBar)
+  let leftPositioner = new Positioner(leftBar)
+  let topPositioner = new Positioner(topBar)
+  let bottomPositioner = new Positioner(bottomBar)
+
+  // Moves the window top right on the screen.
+  rightPositioner.move('topRight')
+  leftPositioner.move('topLeft')
+  topPositioner.move('topCenter')
+  bottomPositioner.move('bottomCenter')
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
