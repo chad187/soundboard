@@ -1,11 +1,11 @@
 // Modules to control application life and create native browser window
 const electron = require('electron')
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron')
 const Positioner = require('electron-positioner')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let transparentScreen
 let rightBar
 let leftBar
 let bottomBar
@@ -17,7 +17,7 @@ function createWindow () {
   let smallWidth = Math.floor(width * .05)
   let smallHeight = Math.floor(height * .07)
   let bottomWidth = width - 2 * smallWidth 
-  mainWindow = new BrowserWindow({
+  transparentScreen = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true
     },
@@ -27,7 +27,6 @@ function createWindow () {
   })
 
   rightBar = new BrowserWindow({
-    parent: mainWindow,
     webPreferences: {
       nodeIntegration: true
     },
@@ -37,7 +36,6 @@ function createWindow () {
   })
 
   leftBar = new BrowserWindow({
-    parent:mainWindow,
     webPreferences: {
       nodeIntegration: true
     },
@@ -47,7 +45,6 @@ function createWindow () {
   })
 
   bottomBar = new BrowserWindow({
-    parent: mainWindow,
     webPreferences: {
       nodeIntegration: true
     },
@@ -57,7 +54,7 @@ function createWindow () {
   })
 
   topBar = new BrowserWindow({
-    parent: mainWindow,
+    // parent: transparentScreen,
     webPreferences: {
       nodeIntegration: true
     },
@@ -66,12 +63,13 @@ function createWindow () {
     frame: false
   })
 
-  rightBar.loadURL('file://' + __dirname + '/rightBar.html')
-  leftBar.loadURL('file://' + __dirname + '/leftBar.html')
-  topBar.loadURL('file://' + __dirname + '/topBar.html')
-  bottomBar.loadURL('file://' + __dirname + '/bottomBar.html')
+  rightBar.loadURL('file://' + __dirname + '/rightBar/index.html')
+  leftBar.loadURL('file://' + __dirname + '/leftBar/index.html')
+  topBar.loadURL('file://' + __dirname + '/topBar/index.html')
+  bottomBar.loadURL('file://' + __dirname + '/bottomBar/index.html')
+  transparentScreen.loadURL('file://' + __dirname + '/transparentScreen/index.html')
 
-  mainWindow.setAlwaysOnTop(true, 'screen');
+  transparentScreen.setAlwaysOnTop(true, 'screen');
   rightBar.setAlwaysOnTop(true, 'screen');
   leftBar.setAlwaysOnTop(true, 'screen');
   topBar.setAlwaysOnTop(true, 'screen');
@@ -79,8 +77,8 @@ function createWindow () {
 
 
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
-  mainWindow.maximize()
+  // transparentScreen.loadFile('transparentScreen.html')
+  transparentScreen.maximize()
 
   let rightPositioner = new Positioner(rightBar)
   let leftPositioner = new Positioner(leftBar)
@@ -94,14 +92,19 @@ function createWindow () {
   bottomPositioner.move('bottomCenter')
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  // transparentScreen.webContents.openDevTools()
 
   // Emitted when the window is closed.
-  mainWindow.on('closed', function () {
+  transparentScreen.on('closed', function () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    mainWindow = null
+    transparentScreen = null
+  })
+
+  ipcMain.on('show-image', () => {
+    transparentScreen.show()
+    setTimeout(() => transparentScreen.hide(), 3500)
   })
 }
 
@@ -120,7 +123,7 @@ app.on('window-all-closed', function () {
 app.on('activate', function () {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) createWindow()
+  if (transparentScreen === null) createWindow()
 })
 
 // In this file you can include the rest of your app's specific main process
