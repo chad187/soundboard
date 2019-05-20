@@ -20,6 +20,7 @@
     "electron": "^5.0.0"
   },
   "dependencies": {
+    "dialogs": "^2.0.1",
     "electron-positioner": "^4.1.0"
   }
 }

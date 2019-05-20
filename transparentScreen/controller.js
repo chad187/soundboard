@@ -1,5 +1,11 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// All of the Node.js APIs are available in this process.
+const {ipcRenderer} = require('electron')
+const Dialogs = require('dialogs')
+const dialogs = Dialogs()
+
+ipcRenderer.on('show-prompt', (event, name) => {
+  dialogs.prompt('Give it a name', name, ok => {
+		ipcRenderer.send('return-prompt', ok)
+	})
+});
 
 // document.getElementById("tester").src="./save.png";

@@ -106,6 +106,16 @@ function createWindow () {
     transparentScreen.show()
     setTimeout(() => transparentScreen.hide(), 3500)
   })
+
+  ipcMain.on('show-prompt', (event, name) => {
+    transparentScreen.show()
+    transparentScreen.webContents.send('show-prompt', name);
+  })
+
+  ipcMain.on('return-prompt', (event, name) => {
+    transparentScreen.hide()
+    leftBar.webContents.send('return-prompt', name);
+  })
 }
 
 // This method will be called when Electron has finished
