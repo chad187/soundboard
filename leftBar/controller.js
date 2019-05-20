@@ -1,8 +1,10 @@
 const {ipcRenderer} = require('electron')
 
-function playMedia(soundFile = null, imageFile = null) {
+function playMedia(button) {
 	ipcRenderer.send('show-image')
-  let audio = new Audio("../oneshallfall.mp3")
+	let pressed = document.getElementById(button)
+  let audio = new Audio(pressed.src)
+  console.log(pressed)
   audio.play()
 }
 
@@ -29,6 +31,8 @@ dropZone.addEventListener('drop', function(e) {
   		alert("image")
   	}
   	else if (sounds.indexOf(extension) !== -1) {
+  		e.srcElement.src = file.path
+  		console.log(e)
   		ipcRenderer.send('show-prompt', e.srcElement.textContent)
   	}
    }
