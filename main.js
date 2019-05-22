@@ -134,7 +134,8 @@ function createWindow () {
     transparentScreen = null
   })
 
-  ipcMain.on('show-image', () => {
+  ipcMain.on('show-image', (event, file) => {
+    transparentScreen.webContents.send('change-image', file)
     transparentScreen.show()
     setTimeout(() => transparentScreen.hide(), 2500)
   })
@@ -144,7 +145,6 @@ function createWindow () {
     transparentScreen.webContents.send('show-prompt', name);
     getSettings
       .then(function (settings) {
-        console.log('147')
         settings.left.button0sound = name.src
         saveSettings(settings)
       })
@@ -157,7 +157,6 @@ function createWindow () {
     leftBar.webContents.send('return-prompt', name)
     getSettings
       .then(function (settings) {
-        console.log('160')
         settings.left.button0text = name
         saveSettings(settings)
       })
@@ -169,7 +168,6 @@ function createWindow () {
     transparentScreen.webContents.send('change-image', file)
     getSettings
       .then(function (settings) {
-        console.log('172')
         settings.left.button0image = file
         saveSettings(settings)
       })
@@ -197,13 +195,15 @@ function saveSettings(toSave) {
 function initializeDB() {
   getSettings
     .then(function (resolve) {
-      // transparentScreen.webContents.send('initialize', file)
-      console.log('201', resolve)
-      leftBar.webContents.send('initialize', resolve.left)
-      rightBar.webContents.send('initialize', resolve.right)
-      topBar.webContents.send('initialize', resolve.top)
-      console.log('205')
-      // bottomBar.webContents.send('initialize', name)
+      leftBar.webContents.once('dom-ready', () => {
+        leftBar.webContents.send('initialize', resolve.left)
+      })
+      rightBar.webContents.once('dom-ready', () => {
+        rightBar.webContents.send('initialize', resolve.right)
+      })
+      topBar.webContents.once('dom-ready', () => {
+        topBar.webContents.send('initialize', resolve.top)
+      })
     })
     .catch(function (error) {
       saveSettings({left: {}, right: {}, top: {}, other: {}})
