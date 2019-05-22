@@ -11,6 +11,36 @@ let leftBar
 let bottomBar
 let topBar
 
+const storage = require('electron-json-storage');
+storage.setDataPath(app.getAppPath())
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function isEmpty(obj) {
+
+    // null and undefined are "empty"
+    if (obj == null) return true;
+
+    // Assume if it has a length property with a non-zero value
+    // that that property is correct.
+    if (obj.length > 0)    return false;
+    if (obj.length === 0)  return true;
+
+    // If it isn't an object at this point
+    // it is empty, but it can't be anything *but* empty
+    // Is it empty?  Depends on your application.
+    if (typeof obj !== "object") return true;
+
+    // Otherwise, does it have any properties of its own?
+    // Note that this doesn't handle
+    // toString and valueOf enumeration bugs in IE < 9
+    for (var key in obj) {
+        if (hasOwnProperty.call(obj, key)) return false;
+    }
+
+    return true;
+}
+
 function createWindow () {
   // Create the browser window.
   const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize
@@ -91,6 +121,8 @@ function createWindow () {
   topPositioner.move('topCenter')
   bottomPositioner.move('bottomCenter')
 
+  initializeDB()
+
   // Open the DevTools.
   // transparentScreen.webContents.openDevTools()
 
@@ -104,18 +136,78 @@ function createWindow () {
 
   ipcMain.on('show-image', () => {
     transparentScreen.show()
-    setTimeout(() => transparentScreen.hide(), 3500)
+    setTimeout(() => transparentScreen.hide(), 2500)
   })
 
   ipcMain.on('show-prompt', (event, name) => {
     transparentScreen.show()
     transparentScreen.webContents.send('show-prompt', name);
+    getSettings
+      .then(function (settings) {
+        console.log('147')
+        settings.left.button0sound = name.src
+        saveSettings(settings)
+      })
+      .catch(function (error) {
+      })
   })
 
   ipcMain.on('return-prompt', (event, name) => {
     transparentScreen.hide()
-    leftBar.webContents.send('return-prompt', name);
+    leftBar.webContents.send('return-prompt', name)
+    getSettings
+      .then(function (settings) {
+        console.log('160')
+        settings.left.button0text = name
+        saveSettings(settings)
+      })
+      .catch(function (error) {
+      })
   })
+
+  ipcMain.on('change-image', (event, file) => {
+    transparentScreen.webContents.send('change-image', file)
+    getSettings
+      .then(function (settings) {
+        console.log('172')
+        settings.left.button0image = file
+        saveSettings(settings)
+      })
+      .catch(function (error) {
+      })
+  })
+}
+
+let getSettings = new Promise(
+    function (resolve, reject) {
+      storage.get('soundBoardSettings', function(error, data) {
+        if (isEmpty(data)) reject(new Error('DB does not exist!'))
+        else if (error) reject(error)
+        else resolve(data)
+      })
+    }
+)
+
+function saveSettings(toSave) {
+  storage.set('soundBoardSettings', toSave, function(error) {
+    if (error) throw error
+  });
+}
+
+function initializeDB() {
+  getSettings
+    .then(function (resolve) {
+      // transparentScreen.webContents.send('initialize', file)
+      console.log('201', resolve)
+      leftBar.webContents.send('initialize', resolve.left)
+      rightBar.webContents.send('initialize', resolve.right)
+      topBar.webContents.send('initialize', resolve.top)
+      console.log('205')
+      // bottomBar.webContents.send('initialize', name)
+    })
+    .catch(function (error) {
+      saveSettings({left: {}, right: {}, top: {}, other: {}})
+    })
 }
 
 // This method will be called when Electron has finished
