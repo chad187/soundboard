@@ -1,4 +1,15 @@
 button {
-	width:9.73%;
+	width: 9.73%;
 	height:100%;
+	background-size: cover;
+	color: white;
+	background-color: black;
+}
+
+span {
+    /*padding: 10px;*/
+    margin: 1px;
+    background: black;
+    color: white;
+    display:inline-block;
 }

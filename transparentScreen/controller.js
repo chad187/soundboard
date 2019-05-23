@@ -4,7 +4,7 @@ const dialogs = Dialogs()
 let dropZone = document.getElementById('image')
 
 ipcRenderer.on('show-prompt', (event, text, side, id) => {
-  dialogs.prompt('Give it a name', text, ok => {
+  dialogs.prompt('Give it a name', 'No Description', ok => {
 		ipcRenderer.send('return-prompt', ok, side, id)
 	})
 });
@@ -15,5 +15,3 @@ ipcRenderer.on('change-image', (event, file) => {
 	dropZone.src = file
 	console.log(dropZone.src)
 });
-
-// document.getElementById("tester").src="./save.png";
