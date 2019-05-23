@@ -137,38 +137,37 @@ function createWindow () {
   ipcMain.on('show-image', (event, file) => {
     transparentScreen.webContents.send('change-image', file)
     transparentScreen.show()
-    setTimeout(() => transparentScreen.hide(), 2500)
+    setTimeout(() => transparentScreen.hide(), 500)
   })
 
-  ipcMain.on('show-prompt', (event, name) => {
+  ipcMain.on('show-prompt', (event, text, side, id) => {
+    transparentScreen.webContents.send('show-prompt', text, side, id);
     transparentScreen.show()
-    transparentScreen.webContents.send('show-prompt', name);
     getSettings
       .then(function (settings) {
-        settings.left.button0sound = name.src
+        eval(`settings.${side}.${id}sound = ${String.raw`text.src`}`)
         saveSettings(settings)
       })
       .catch(function (error) {
       })
   })
 
-  ipcMain.on('return-prompt', (event, name) => {
+  ipcMain.on('return-prompt', (event, name, side, id) => {
     transparentScreen.hide()
-    leftBar.webContents.send('return-prompt', name)
+    eval(`${side}Bar.webContents.send('return-prompt', '${name}', '${id}')`)
     getSettings
       .then(function (settings) {
-        settings.left.button0text = name
+        eval(`settings.${side}.${id}text = '${name}'`)  //works because it is not an address
         saveSettings(settings)
       })
       .catch(function (error) {
       })
   })
 
-  ipcMain.on('change-image', (event, file) => {
-    transparentScreen.webContents.send('change-image', file)
+  ipcMain.on('change-image', (event, file, side, id) => {
     getSettings
       .then(function (settings) {
-        settings.left.button0image = file
+        eval(`settings.${side}.${id}image = ${String.raw`file`}`)
         saveSettings(settings)
       })
       .catch(function (error) {

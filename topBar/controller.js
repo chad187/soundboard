@@ -51,11 +51,11 @@ function drop(e) {
   	let extension = file.path.split('.')[1] //this is error prone way
   	if (images.indexOf(extension) !== -1) {
   		e.srcElement.alt = file.path
-  		ipcRenderer.send('change-image', file.path, "left", e.srcElement.id)
+  		ipcRenderer.send('change-image', file.path, "top", e.srcElement.id)
   	}
   	else if (sounds.indexOf(extension) !== -1) {
   		e.srcElement.src = file.path
-  		ipcRenderer.send('show-prompt', e.srcElement, "left", e.srcElement.id)
+  		ipcRenderer.send('show-prompt', e.srcElement, "top", e.srcElement.id)
   	}
    }
 }
