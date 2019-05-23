@@ -1,19 +1,18 @@
-function loop() {
-	if (document.getElementById("loop").style.backgroundColor == 'green') {
-		ipcRenderer.send('toggle-loop', false)
-		document.getElementById("loop").style.backgroundColor = "red";
-		return
-	}
-	ipcRenderer.send('toggle-loop', true)
-	document.getElementById("loop").style.backgroundColor = "green";
-}
+const {ipcRenderer} = require('electron')
+
+let imageButton = document.getElementById("image")
 
 function image() {
-	if(document.getElementById("image").style.backgroundColor == "green") {
-		ipcRenderer.send('toggleimage', false)
-		document.getElementById("image").style.backgroundColor = 'red'
-		
+	if(imageButton.style.backgroundColor == "green") {
+		ipcRenderer.send('toggle-image', false)
+		imageButton.style.backgroundColor = 'red'
+		return
 	}
 	ipcRenderer.send('toggle-image', true)
-	document.getElementById("image").style.backgroundColor = 'green'
+	imageButton.style.backgroundColor = 'green'
 }
+
+ipcRenderer.on('initialize', (event, settings) => {
+	if (settings.isImage) imageButton.style.backgroundColor = 'green'
+	else imageButton.style.backgroundColor = 'red'
+})

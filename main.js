@@ -135,9 +135,16 @@ function createWindow () {
   })
 
   ipcMain.on('show-image', (event, file) => {
-    transparentScreen.webContents.send('change-image', file)
-    transparentScreen.show()
-    setTimeout(() => transparentScreen.hide(), 500)
+    getSettings
+      .then(function (settings) {
+        if (settings.bottom.isImage) {
+          transparentScreen.webContents.send('change-image', file)
+          transparentScreen.show()
+          setTimeout(() => transparentScreen.hide(), 500)
+        }
+      })
+      .catch(function (error) {
+      })
   })
 
   ipcMain.on('show-prompt', (event, text, side, id) => {
@@ -173,6 +180,17 @@ function createWindow () {
       .catch(function (error) {
       })
   })
+
+  ipcMain.on('toggle-image', (event, isOn) => {
+    getSettings
+      .then(function (settings) {
+        settings.bottom.isImage = isOn
+        saveSettings(settings)
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
+  })
 }
 
 let getSettings = new Promise(
@@ -203,9 +221,12 @@ function initializeDB() {
       topBar.webContents.once('dom-ready', () => {
         topBar.webContents.send('initialize', resolve.top)
       })
+      bottomBar.webContents.once('dom-ready', () => {
+        bottomBar.webContents.send('initialize', resolve.bottom)
+      })
     })
     .catch(function (error) {
-      saveSettings({left: {}, right: {}, top: {}, other: {}})
+      saveSettings({left: {}, right: {}, top: {}, bottom: {}})
     })
 }
 
