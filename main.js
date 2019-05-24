@@ -108,7 +108,7 @@ function createWindow () {
 
   // and load the index.html of the app.
   // transparentScreen.loadFile('transparentScreen.html')
-  transparentScreen.maximize()
+  // transparentScreen.maximize()
 
   let rightPositioner = new Positioner(rightBar)
   let leftPositioner = new Positioner(leftBar)
@@ -140,7 +140,7 @@ function createWindow () {
         if (settings.bottom.isImage) {
           transparentScreen.webContents.send('change-image', file)
           transparentScreen.show()
-          setTimeout(() => transparentScreen.hide(), 500)
+          setTimeout(() => transparentScreen.hide(), 2500)
         }
       })
       .catch(function (error) {
