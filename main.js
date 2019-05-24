@@ -144,18 +144,20 @@ function createWindow () {
         }
       })
       .catch(function (error) {
+        console.log(error)
       })
   })
 
-  ipcMain.on('show-prompt', (event, text, side, id) => {
-    transparentScreen.webContents.send('show-prompt', text, side, id);
+  ipcMain.on('show-prompt', (event, file, side, id) => {
+    transparentScreen.webContents.send('show-prompt', file, side, id);
     transparentScreen.show()
     getSettings
       .then(function (settings) {
-        eval(`settings.${side}.${id}sound = ${String.raw`text.src`}`)
+        eval(`settings.${side}.${id}sound = ${String.raw`file`}`)
         saveSettings(settings)
       })
       .catch(function (error) {
+        console.log(error)
       })
   })
 
@@ -168,6 +170,7 @@ function createWindow () {
         saveSettings(settings)
       })
       .catch(function (error) {
+        console.log(error)
       })
   })
 
@@ -178,6 +181,7 @@ function createWindow () {
         saveSettings(settings)
       })
       .catch(function (error) {
+        console.log(error)
       })
   })
 

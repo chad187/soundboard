@@ -63,11 +63,11 @@ function drop(e) {
   	else if (sounds.indexOf(extension) !== -1) {
   		if (e.srcElement.nodeName == 'SPAN') {
   			e.srcElement.parentNode.src = file.path
-  			ipcRenderer.send('show-prompt', e.srcElement.data, "left", e.srcElement.parentNode.id)
+  			ipcRenderer.send('show-prompt', file.path, "left", e.srcElement.parentNode.id)
   		}
   		else{
   			e.srcElement.src = file.path
-  			ipcRenderer.send('show-prompt', e.srcElement.data, "left", e.srcElement.id)
+  			ipcRenderer.send('show-prompt', file.path, "left", e.srcElement.id)
   		}
   	}
   	else {
@@ -84,7 +84,8 @@ function playMedia(drop) {
 }
 
 function addSlashes(file) {
-	return file.replace(/\\/g, "\\\\")
+	if (file) return file.replace(/\\/g, "\\\\")
+	else return
 }
 
 ipcRenderer.on('return-prompt', (event, name, id) => {
