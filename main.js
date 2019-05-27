@@ -47,33 +47,6 @@ function createWindow () {
   let smallWidth = Math.floor(width * .05)
   let smallHeight = Math.floor(height * .07)
   let bottomWidth = width - 2 * smallWidth 
-  transparentScreen = new BrowserWindow({
-    webPreferences: {
-      nodeIntegration: true
-    },
-    transparent:true,
-    frame: false,
-    show: false
-  })
-
-  rightBar = new BrowserWindow({
-    webPreferences: {
-      nodeIntegration: true
-    },
-    width: smallWidth,
-    height: height,
-    frame: false
-  })
-
-  leftBar = new BrowserWindow({
-    webPreferences: {
-      nodeIntegration: true
-    },
-    width: smallWidth,
-    height: height,
-    frame: false
-  })
-
   bottomBar = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true
@@ -83,8 +56,38 @@ function createWindow () {
     frame: false
   })
 
+  rightBar = new BrowserWindow({
+    parent: bottomBar,
+    webPreferences: {
+      nodeIntegration: true
+    },
+    width: smallWidth,
+    height: height,
+    frame: false
+  })
+
+  leftBar = new BrowserWindow({
+    parent: bottomBar,
+    webPreferences: {
+      nodeIntegration: true
+    },
+    width: smallWidth,
+    height: height,
+    frame: false
+  })
+
+  transparentScreen = new BrowserWindow({
+    parent: bottomBar,
+    webPreferences: {
+      nodeIntegration: true
+    },
+    transparent:true,
+    frame: false,
+    show: false
+  })
+
   topBar = new BrowserWindow({
-    // parent: transparentScreen,
+    parent: bottomBar,
     webPreferences: {
       nodeIntegration: true
     },
@@ -195,6 +198,12 @@ function createWindow () {
         console.log(error)
       })
   })
+
+  ipcMain.on('toggle-sample', (event, isOn) => {
+    leftBar.webContents.send('toggle-sample', isOn)
+    rightBar.webContents.send('toggle-sample', isOn)
+    topBar.webContents.send('toggle-sample', isOn)
+  })
 }
 
 let getSettings = new Promise(
@@ -231,6 +240,7 @@ function initializeDB() {
     })
     .catch(function (error) {
       saveSettings({left: {}, right: {}, top: {}, bottom: {}})
+      app.quit()
     })
 }
 

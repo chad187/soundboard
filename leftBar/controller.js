@@ -34,6 +34,8 @@ drop7.addEventListener('drop', drop)
 drop8.addEventListener('drop', drop)
 drop9.addEventListener('drop', drop)
 
+let isSample
+
 function dragover(e) {
 	e.stopPropagation();
   e.preventDefault();
@@ -78,15 +80,24 @@ function drop(e) {
 
 function playMedia(drop) {
 	let pressed = document.getElementById(drop)
-	ipcRenderer.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''))
-  let audio = new Audio(pressed.src)
-  audio.play()
+	if (isSample) {
+		pressed.style.backgroundColor = 'green'
+	}
+	else {
+		ipcRenderer.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "left", drop)
+	  let audio = new Audio(pressed.src)
+	  audio.play()
+	}
 }
 
 function addSlashes(file) {
 	if (file) return file.replace(/\\/g, "\\\\")
 	else return
 }
+
+ipcRenderer.on('toggle-sample', (event, isOn) => {
+	isSample = isOn
+})
 
 ipcRenderer.on('return-prompt', (event, name, id) => {
 	eval(`${id}.children[0].firstChild.data = '${name}'`)
