@@ -23,6 +23,7 @@
   "dependencies": {
     "dialogs": "^2.0.1",
     "electron-json-storage": "^4.1.6",
-    "electron-positioner": "^4.1.0"
+    "electron-positioner": "^4.1.0",
+    "webrtc-adapter": "^4.2.2"
   }
 }

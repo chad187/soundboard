@@ -1,4 +1,5 @@
 const {ipcRenderer} = require('electron')
+const fs = require('fs');
 
 let drop0 = document.getElementById('drop0');
 let drop1 = document.getElementById('drop1');
@@ -33,6 +34,9 @@ drop6.addEventListener('drop', drop)
 drop7.addEventListener('drop', drop)
 drop8.addEventListener('drop', drop)
 drop9.addEventListener('drop', drop)
+
+let isSample
+let mediaRecorder
 
 function dragover(e) {
 	e.stopPropagation();
@@ -78,9 +82,55 @@ function drop(e) {
 
 function playMedia(drop) {
 	let pressed = document.getElementById(drop)
-	ipcRenderer.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''))
-  let audio = new Audio(pressed.src)
-  audio.play()
+	if (isSample) {
+		pressed.style.opacity = .1
+
+		navigator.mediaDevices.getUserMedia({ audio: true })
+		  .then(stream => {
+		    mediaRecorder = new MediaRecorder(stream);
+		    mediaRecorder.start();
+
+		    const audioChunks = [];
+
+		    mediaRecorder.addEventListener("dataavailable", event => {
+		      audioChunks.push(event.data);
+		    })
+
+		    mediaRecorder.addEventListener("stop", (event) => {
+		      const audioBlob = new Blob(audioChunks,{type:'audio/aac'});
+		      const audioUrl = URL.createObjectURL(audioBlob);
+		 			pressed.src = saveFile(audioBlob)
+		 			ipcRenderer.send('show-prompt', pressed.src, "top", drop)
+		      // const audio = new Audio(audioUrl);
+      		// audio.play();
+		      
+		    })
+		  })    
+  }
+	else {
+		ipcRenderer.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "top", drop)
+	  let audio = new Audio(pressed.src)
+	  audio.play()
+	}
+}
+
+function saveFile(file) {
+	let fileReader = new FileReader();
+	let fileName = require('path').join(require('os').homedir(), 'Desktop') + '\\' + Date.now() + '.aac'
+	fileReader.onload = function() {
+	  fs.writeFileSync(fileName, Buffer.from(new Uint8Array(this.result)));
+	}
+	fileReader.readAsArrayBuffer(file);
+	return fileName
+}
+
+function stopSample(drop) {
+	if (isSample) {
+		let pressed = document.getElementById(drop)
+		pressed.style.opacity = 1
+
+		mediaRecorder.stop()
+	}
 }
 
 function addSlashes(file) {
@@ -88,49 +138,52 @@ function addSlashes(file) {
 	else return
 }
 
+ipcRenderer.on('toggle-sample', (event, isOn) => {
+	isSample = isOn
+})
+
 ipcRenderer.on('return-prompt', (event, name, id) => {
 	eval(`${id}.children[0].firstChild.data = '${name}'`)
 })
 
 ipcRenderer.on('initialize', (event, settings) => {
-	console.log(settings)
 	drop0.children[0].firstChild.data = settings.drop0text
 	drop0.src = settings.drop0sound
-	drop0.style.backgroundImage = `url('${addSlashes(settings.drop0image)}')`
+	if(settings.drop0image) drop0.style.backgroundImage = `url('${addSlashes(settings.drop0image)}')`
 
 	drop1.children[0].firstChild.data = settings.drop1text
 	drop1.src = settings.drop1sound
-	drop1.style.backgroundImage = `url('${addSlashes(settings.drop1image)}')`
+	if(settings.drop1image) drop1.style.backgroundImage = `url('${addSlashes(settings.drop1image)}')`
 
 	drop2.children[0].firstChild.data = settings.drop2text
 	drop2.src = settings.drop2sound
-	drop2.style.backgroundImage = `url('${addSlashes(settings.drop2image)}')`
+	if(settings.drop2image) drop2.style.backgroundImage = `url('${addSlashes(settings.drop2image)}')`
 
 	drop3.children[0].firstChild.data = settings.drop3text
 	drop3.src = settings.drop3sound
-	drop3.style.backgroundImage = `url('${addSlashes(settings.drop3image)}')`
+	if(settings.drop3image) drop3.style.backgroundImage = `url('${addSlashes(settings.drop3image)}')`
 
 	drop4.children[0].firstChild.data = settings.drop4text
 	drop4.src = settings.drop4sound
-	drop4.style.backgroundImage = `url('${addSlashes(settings.drop4image)}')`
+	if(settings.drop4image) drop4.style.backgroundImage = `url('${addSlashes(settings.drop4image)}')`
 
 	drop5.children[0].firstChild.data = settings.drop5text
 	drop5.src = settings.drop5sound
-	drop5.style.backgroundImage = `url('${addSlashes(settings.drop5image)}')`
+	if(settings.drop5image) drop5.style.backgroundImage = `url('${addSlashes(settings.drop5image)}')`
 
 	drop6.children[0].firstChild.data = settings.drop6text
 	drop6.src = settings.drop6sound
-	drop6.style.backgroundImage = `url('${addSlashes(settings.drop6image)}')`
+	if(settings.drop6image) drop6.style.backgroundImage = `url('${addSlashes(settings.drop6image)}')`
 
 	drop7.children[0].firstChild.data = settings.drop7text
 	drop7.src = settings.drop7sound
-	drop7.style.backgroundImage = `url('${addSlashes(settings.drop7image)}')`
+	if(settings.drop7image) drop7.style.backgroundImage = `url('${addSlashes(settings.drop7image)}')`
 
 	drop8.children[0].firstChild.data = settings.drop8text
 	drop8.src = settings.drop8sound
-	drop8.style.backgroundImage = `url('${addSlashes(settings.drop8image)}')`
+	if(settings.drop8image) drop8.style.backgroundImage = `url('${addSlashes(settings.drop8image)}')`
 
 	drop9.children[0].firstChild.data = settings.drop9text
 	drop9.src = settings.drop9sound
-	drop9.style.backgroundImage = `url('${addSlashes(settings.drop9image)}')`
+	if(settings.drop9image) drop9.style.backgroundImage = `url('${addSlashes(settings.drop9image)}')`
 })
