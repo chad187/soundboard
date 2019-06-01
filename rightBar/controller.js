@@ -36,7 +36,11 @@ drop8.addEventListener('drop', drop)
 drop9.addEventListener('drop', drop)
 
 let isSample
+let isKeyMap
 let mediaRecorder
+let isSelected = false
+let keyMap = new Map()
+let toMap
 
 function dragover(e) {
 	e.stopPropagation();
@@ -107,6 +111,11 @@ function playMedia(drop) {
 		    })
 		  })    
   }
+  else if (isKeyMap) {
+  	pressed.style.opacity = .1
+  	isSelected = true
+  	toMap = pressed
+  }
 	else {
 		ipcRenderer.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "right", drop)
 	  let audio = new Audio(pressed.src)
@@ -128,7 +137,8 @@ function stopSample(drop) {
 	if (isSample) {
 		let pressed = document.getElementById(drop)
 		pressed.style.opacity = 1
-
+		ipcRenderer.send('force-red')
+		isSample = false
 		mediaRecorder.stop()
 	}
 }
@@ -142,48 +152,122 @@ ipcRenderer.on('toggle-sample', (event, isOn) => {
 	isSample = isOn
 })
 
+ipcRenderer.on('toggle-keyMap', (event, isOn) => {
+	isKeyMap = isOn
+})
+
 ipcRenderer.on('return-prompt', (event, name, id) => {
 	eval(`${id}.children[0].firstChild.data = '${name}'`)
 })
 
+function checkMapAdd (keycode) {
+	for (var [id, code] of keyMap) {
+    if (code == keycode) {
+    	let oldButton = document.getElementById(id)
+    	let oldSpan =oldButton.children[1].firstChild
+    	oldSpan.data = null
+    	keyMap.delete(id)
+    	break
+    }
+  }
+  keyMap.set(toMap.id, keycode)
+	let button = document.getElementById(toMap.id)
+	let span = button.children[1].firstChild
+	span.data = String.fromCharCode(keycode)
+}
+
+function checkMapPlay(keycode) {
+	for (var [id, code] of keyMap) {
+		if (code == keycode) {
+	  	playMedia(id)
+	  	break
+	  }
+	}
+}
+
+ipcRenderer.on('keyDown', (event, keycode) => {
+	if (isSelected && isKeyMap) {
+		if (keyMap.size == 0) {
+			keyMap.set(toMap.id, keycode)
+	    let button = document.getElementById(toMap.id)
+	    let span = button.children[1].firstChild
+	    span.data = String.fromCharCode(keycode)
+		}
+		else {
+			checkMapAdd(keycode)
+		}
+		ipcRenderer.send('save-keyMap', "right", JSON.stringify([...keyMap]))
+		isSelected = false
+		isKeyMap = false
+		ipcRenderer.send('force-red')
+		if (toMap != null ) document.getElementById(toMap.id).style.opacity = 1
+		toMap = null
+	}
+	else {
+		checkMapPlay(keycode)
+	}
+})
+
+function buildMap(arrayMap) {
+	if (arrayMap != null) {
+		for (var i=0; i < arrayMap.length; i++){
+			keyMap.set(arrayMap[i][0], arrayMap[i][1])
+		}
+	}
+
+	// keyMap = new Map(JSON.parse(settings.keymap))
+	// console.log(settings.keymap)
+}
+
 ipcRenderer.on('initialize', (event, settings) => {
+	buildMap(settings.keymap)
 	drop0.children[0].firstChild.data = settings.drop0text
 	drop0.src = settings.drop0sound
+	if (keyMap.has('drop0')) document.getElementById('drop0').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop0'))
 	if(settings.drop0image) drop0.style.backgroundImage = `url('${addSlashes(settings.drop0image)}')`
 
 	drop1.children[0].firstChild.data = settings.drop1text
 	drop1.src = settings.drop1sound
+	if (keyMap.has('drop1')) document.getElementById('drop1').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop1'))
 	if(settings.drop1image) drop1.style.backgroundImage = `url('${addSlashes(settings.drop1image)}')`
 
 	drop2.children[0].firstChild.data = settings.drop2text
 	drop2.src = settings.drop2sound
+	if (keyMap.has('drop2')) document.getElementById('drop2').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop2'))
 	if(settings.drop2image) drop2.style.backgroundImage = `url('${addSlashes(settings.drop2image)}')`
 
 	drop3.children[0].firstChild.data = settings.drop3text
 	drop3.src = settings.drop3sound
+	if (keyMap.has('drop3')) document.getElementById('drop3').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop3'))
 	if(settings.drop3image) drop3.style.backgroundImage = `url('${addSlashes(settings.drop3image)}')`
 
 	drop4.children[0].firstChild.data = settings.drop4text
 	drop4.src = settings.drop4sound
+	if (keyMap.has('drop4')) document.getElementById('drop4').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop4'))
 	if(settings.drop4image) drop4.style.backgroundImage = `url('${addSlashes(settings.drop4image)}')`
 
 	drop5.children[0].firstChild.data = settings.drop5text
 	drop5.src = settings.drop5sound
+	if (keyMap.has('drop5')) document.getElementById('drop5').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop5'))
 	if(settings.drop5image) drop5.style.backgroundImage = `url('${addSlashes(settings.drop5image)}')`
 
 	drop6.children[0].firstChild.data = settings.drop6text
 	drop6.src = settings.drop6sound
+	if (keyMap.has('drop6')) document.getElementById('drop6').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop6'))
 	if(settings.drop6image) drop6.style.backgroundImage = `url('${addSlashes(settings.drop6image)}')`
 
 	drop7.children[0].firstChild.data = settings.drop7text
 	drop7.src = settings.drop7sound
+	if (keyMap.has('drop7')) document.getElementById('drop7').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop7'))
 	if(settings.drop7image) drop7.style.backgroundImage = `url('${addSlashes(settings.drop7image)}')`
 
 	drop8.children[0].firstChild.data = settings.drop8text
 	drop8.src = settings.drop8sound
+	if (keyMap.has('drop8')) document.getElementById('drop8').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop8'))
 	if(settings.drop8image) drop8.style.backgroundImage = `url('${addSlashes(settings.drop8image)}')`
 
 	drop9.children[0].firstChild.data = settings.drop9text
 	drop9.src = settings.drop9sound
+	if (keyMap.has('drop9')) document.getElementById('drop9').children[1].firstChild.data = String.fromCharCode(keyMap.get('drop9'))
 	if(settings.drop9image) drop9.style.backgroundImage = `url('${addSlashes(settings.drop9image)}')`
 })

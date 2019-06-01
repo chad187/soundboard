@@ -1,5 +1,5 @@
 button {
-	width: 9.73%;
+	width:9.73%;
 	height:100%;
 	background-size: cover;
 	color: white;
@@ -7,9 +7,12 @@ button {
 }
 
 span {
-    /*padding: 10px;*/
-    margin: 1px;
+    text-align: center;
     background: black;
     color: white;
     display:inline-block;
+}
+
+span:nth-child(2) {
+  background: red;
 }

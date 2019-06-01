@@ -7,10 +7,12 @@ button {
 }
 
 span {
-    
-    /*margin: 10px;*/
     text-align: center;
     background: black;
     color: white;
     display:inline-block;
+}
+
+span:nth-child(2) {
+  background: red;
 }

@@ -2,6 +2,7 @@
 const electron = require('electron')
 const {app, BrowserWindow, ipcMain} = require('electron')
 const Positioner = require('electron-positioner')
+const ioHook = require('iohook');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -200,9 +201,40 @@ function createWindow () {
   })
 
   ipcMain.on('toggle-sample', (event, isOn) => {
+    if (isOn) {
+      leftBar.webContents.send('toggle-keyMap', false)
+      rightBar.webContents.send('toggle-keyMap', false)
+      topBar.webContents.send('toggle-keyMap', false)
+    }
     leftBar.webContents.send('toggle-sample', isOn)
     rightBar.webContents.send('toggle-sample', isOn)
     topBar.webContents.send('toggle-sample', isOn)
+  })
+
+  ipcMain.on('toggle-keyMap', (event, isOn) => {
+    if (isOn) {
+      leftBar.webContents.send('toggle-sample', false)
+      rightBar.webContents.send('toggle-sample', false)
+      topBar.webContents.send('toggle-sample', false)
+    }
+    leftBar.webContents.send('toggle-keyMap', isOn)
+    rightBar.webContents.send('toggle-keyMap', isOn)
+    topBar.webContents.send('toggle-keyMap', isOn)
+  })
+
+  ipcMain.on('force-red', (event) => {
+    bottomBar.webContents.send('force-red')
+  })
+
+  ipcMain.on('save-keyMap', (event, side, keyMap) => {
+    getSettings
+      .then(function (settings) {
+        eval(`settings.${side}.keymap = ${keyMap}`)
+        saveSettings(settings)
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
   })
 }
 
@@ -262,5 +294,31 @@ app.on('activate', function () {
   if (transparentScreen === null) createWindow()
 })
 
+ioHook.on('keydown', event => {
+  leftBar.webContents.send('keyDown', event.rawcode)
+  rightBar.webContents.send('keyDown', event.rawcode)
+  topBar.webContents.send('keyDown', event.rawcode)
+  bottomBar.webContents.send('keyDown')
+
+})
+
+ioHook.start();
+
+function checkMap(keycode, settings) {
+  if (settins.keyMaps) {
+    for (var [id, code] of settings.keyMaps) {
+      if (value == event.code) {
+
+        return
+      }
+    }
+  }
+
+  settings.keyMaps = new Map()
+
+  leftBar.webContents.send('keyDown', event.keycode)
+  rightBar.webContents.send('keyDown', event.keycode)
+  topBar.webContents.send('keyDown', event.keycode)
+}
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.

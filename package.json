@@ -24,6 +24,26 @@
     "dialogs": "^2.0.1",
     "electron-json-storage": "^4.1.6",
     "electron-positioner": "^4.1.0",
+    "iohook": "^0.4.6",
     "webrtc-adapter": "^4.2.2"
+  },
+  "cmake-js": {
+    "runtime": "electron",
+    "runtimeVersion": "1.4.7"
+  },
+  "iohook": {
+    "targets": [
+      "node-64",
+      "electron-70"
+    ],
+    "platforms": [
+      "win32",
+      "darwin",
+      "linux"
+    ],
+    "arches": [
+      "x64",
+      "ia32"
+    ]
   }
 }
