@@ -222,6 +222,24 @@ function createWindow () {
     topBar.webContents.send('toggle-keyMap', isOn)
   })
 
+  ipcMain.on('isSelected', (event, side)  => {
+    if (side == 'top') {
+      leftBar.webContents.send('selected-off', true)
+      rightBar.webContents.send('selected-off', true)
+      topBar.webContents.send('selected-off', false)
+    }
+    else if (side == 'right') {
+      leftBar.webContents.send('selected-off', true)
+      topBar.webContents.send('selected-off', true)
+      rightBar.webContents.send('selected-off', false)
+    }
+    else if (side == 'left') {
+      topBar.webContents.send('selected-off', true)
+      rightBar.webContents.send('selected-off', true)
+      leftBar.webContents.send('selected-off', false)
+    }
+  })
+
   ipcMain.on('force-red', (event) => {
     bottomBar.webContents.send('force-red')
   })
@@ -231,6 +249,19 @@ function createWindow () {
       .then(function (settings) {
         eval(`settings.${side}.keymap = ${keyMap}`)
         saveSettings(settings)
+        if (side == 'left') {
+          topBar.webContents.send('update-keymap', settings.left.keymap)
+          rightBar.webContents.send('update-keymap', settings.left.keymap)
+        }
+        else if (side == 'right') {
+          topBar.webContents.send('update-keymap', settings.right.keymap)
+          leftBar.webContents.send('update-keymap', settings.right.keymap)
+        }
+        else if (side == 'top') {
+          leftBar.webContents.send('update-keymap', settings.top.keymap)
+          rightBar.webContents.send('update-keymap', settings.top.keymap)
+        }
+        
       })
       .catch(function (error) {
         console.log(error)

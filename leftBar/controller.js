@@ -38,7 +38,7 @@ drop9.addEventListener('drop', drop)
 let isSample
 let isKeyMap
 let mediaRecorder
-let isSelected = false
+let isSelected
 let keyMap = new Map()
 let toMap
 
@@ -112,9 +112,10 @@ function playMedia(drop) {
 		  })    
   }
   else if (isKeyMap) {
+  	clearChosen()
   	pressed.style.opacity = .1
-  	isSelected = true
   	toMap = pressed
+  	ipcRenderer.send('isSelected', 'left')
   }
 	else {
 		ipcRenderer.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "left", drop)
@@ -138,7 +139,7 @@ function stopSample(drop) {
 		let pressed = document.getElementById(drop)
 		pressed.style.opacity = 1
 		ipcRenderer.send('force-red')
-		isSample = false
+		ipcRenderer.send('toggle-sample', false)
 		mediaRecorder.stop()
 	}
 }
@@ -153,6 +154,9 @@ ipcRenderer.on('toggle-sample', (event, isOn) => {
 })
 
 ipcRenderer.on('toggle-keyMap', (event, isOn) => {
+	if (!isOn) {
+		clearChosen()
+	}
 	isKeyMap = isOn
 })
 
@@ -186,6 +190,7 @@ function checkMapPlay(keycode) {
 }
 
 ipcRenderer.on('keyDown', (event, keycode) => {
+	console.log('keydown')
 	if (isSelected && isKeyMap) {
 		if (keyMap.size == 0) {
 			keyMap.set(toMap.id, keycode)
@@ -198,12 +203,12 @@ ipcRenderer.on('keyDown', (event, keycode) => {
 		}
 		ipcRenderer.send('save-keyMap', "left", JSON.stringify([...keyMap]))
 		isSelected = false
-		isKeyMap = false
+		ipcRenderer.send('toggle-keyMap', false)
 		ipcRenderer.send('force-red')
 		if (toMap != null ) document.getElementById(toMap.id).style.opacity = 1
 		toMap = null
 	}
-	else {
+	else if (!isSelected && !isKeyMap) {
 		checkMapPlay(keycode)
 	}
 })
@@ -214,10 +219,32 @@ function buildMap(arrayMap) {
 			keyMap.set(arrayMap[i][0], arrayMap[i][1])
 		}
 	}
-
-	// keyMap = new Map(JSON.parse(settings.keymap))
-	// console.log(settings.keymap)
 }
+
+function clearChosen() {
+	isSelected = false
+	if (toMap != null ) document.getElementById(toMap.id).style.opacity = 1
+	toMap = null
+}
+
+ipcRenderer.on('selected-off', (event, switchOff) => {
+	if (switchOff) clearChosen()
+	else isSelected = true
+})
+
+ipcRenderer.on('update-keymap', (event, tempKeyMap) => {
+	for (var [id, code] of keyMap) {
+		for(var [tempID, tempCode] of tempKeyMap) {
+			if (code == tempCode) {
+	    	let oldButton = document.getElementById(id)
+	    	let oldSpan =oldButton.children[1].firstChild
+	    	oldSpan.data = null
+	    	keyMap.delete(id)
+	    	break
+	    }
+		}
+	}
+})
 
 ipcRenderer.on('initialize', (event, settings) => {
 	buildMap(settings.keymap)
