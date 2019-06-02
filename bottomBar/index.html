@@ -3,10 +3,20 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-  	<div>
+  	<div id=mainBox>
     	<button id=image onclick="image()" type="button">Image</button>
     	<button id=sample onclick="sample()" type="button">Sample</button>
       <button id=keyMap onclick="keyMap()" type="button">Key Map</button>
+      <div id=activePanel>
+        <p><Strong>Active Panel</Strong></p>
+        <input id=left type="checkbox" onchange='handleChange(this)' checked> Left Panel
+        <input id=top type="checkbox" onchange='handleChange(this)' checked> Top Panel
+        <input id=right type="checkbox" onchange='handleChange(this)' checked> Right Panel
+      </div>
+      <div id=controls>
+        <button class=controls onclick="minimize()" type='button'>-</button>
+        <button class=controls onclick="closeApp()" type='button'>X</button>
+      </div>
     </div>
   </body>
   <script src="./controller.js"></script>

@@ -4,6 +4,18 @@ let imageButton = document.getElementById("image")
 let sampleButton = document.getElementById("sample")
 let keyMapButton = document.getElementById("keyMap")
 
+function handleChange(checkbox) {
+    ipcRenderer.send('toggle-panel', checkbox.id, checkbox.checked)
+}
+
+function minimize() {
+	ipcRenderer.send('minimize')
+}
+
+function closeApp() {
+	ipcRenderer.send('close')
+}
+
 function image() {
 	if(imageButton.style.backgroundColor == "green") {
 		ipcRenderer.send('toggle-image', false)
@@ -39,6 +51,13 @@ function keyMap() {
 ipcRenderer.on('initialize', (event, settings) => {
 	if (settings.isImage) imageButton.style.backgroundColor = 'green'
 	else imageButton.style.backgroundColor = 'red'
+	
+	handleChange({id: 'left', checked: settings.left })
+	document.getElementById("left").checked = settings.left
+	handleChange({id: 'top', checked: settings.top })
+	document.getElementById("top").checked = settings.top
+	handleChange({id: 'right', checked: settings.right })
+	document.getElementById("right").checked = settings.right
 	
 	sampleButton.style.backgroundColor = 'red'
 })

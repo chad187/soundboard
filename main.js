@@ -267,6 +267,34 @@ function createWindow () {
         console.log(error)
       })
   })
+
+  ipcMain.on('toggle-panel', (event, side, isChecked) => {
+    if (isChecked) {
+      eval(`${side}Bar.show()`)
+    }
+    else {
+      eval(`${side}Bar.hide()`)
+    }
+    getSettings
+      .then(function (settings) {
+        eval(`settings.bottom.${side} = ${isChecked}`)
+        saveSettings(settings)
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
+  })
+
+  ipcMain.on('minimize', (event) => {
+    if (leftBar.isVisible()) leftBar.minimize()
+    if (rightBar.isVisible()) rightBar.minimize()  
+    if (topBar.isVisible()) topBar.minimize()
+    bottomBar.minimize()
+  })
+
+  ipcMain.on('close', (event) => {
+    app.quit()
+  })
 }
 
 let getSettings = new Promise(
@@ -302,7 +330,7 @@ function initializeDB() {
       })
     })
     .catch(function (error) {
-      saveSettings({left: {}, right: {}, top: {}, bottom: {}})
+      saveSettings({left: {}, right: {}, top: {}, bottom: {isImage:true, left:true, top:true, right :true}})
       app.quit()
     })
 }

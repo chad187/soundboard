@@ -2,4 +2,48 @@ button {
 	width:10%;
 	height:100%;
 	background-color: red;
+	float:left;
+}
+
+#activePanel {
+	width: 35%;
+	height:100%;
+	background-color: red;
+	float:left;
+	margin:auto;
+	margin-left:10px;
+	text-align: center;
+	/*padding-left: 5px;*/
+	/*display:inline-block;*/
+	/*clear:both;*/
+	/*overflow: hidden;*/
+}
+
+#mainBox {
+	height:100%;
+	width:80%;
+}
+
+input {
+	width: .9em;
+	height: .9em;
+}
+
+p {
+	margin: auto;
+}
+
+#controls {
+	/*float:right;*/
+	position: fixed;
+    top: 0;
+    right: 0;
+	width: 6%;
+	height: 100%;
+}
+
+.controls {
+	/*float: left;*/
+	width: 50%;
+	height: 60%;
 }
