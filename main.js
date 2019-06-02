@@ -330,7 +330,6 @@ ioHook.on('keydown', event => {
   rightBar.webContents.send('keyDown', event.rawcode)
   topBar.webContents.send('keyDown', event.rawcode)
   bottomBar.webContents.send('keyDown')
-
 })
 
 ioHook.start();
