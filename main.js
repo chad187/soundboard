@@ -167,10 +167,11 @@ function createWindow () {
 
   ipcMain.on('return-prompt', (event, name, side, id) => {
     transparentScreen.hide()
-    eval(`${side}Bar.webContents.send('return-prompt', '${name}', '${id}')`)
+    var temp = name.replace("\'", "");
+    eval(`${side}Bar.webContents.send('return-prompt', '${temp}', '${id}')`)
     getSettings
       .then(function (settings) {
-        eval(`settings.${side}.${id}text = '${name}'`)  //works because it is not an address
+        eval(`settings.${side}.${id}text = '${temp}'`)  //works because it is not an address
         saveSettings(settings)
       })
       .catch(function (error) {
@@ -354,10 +355,12 @@ app.on('activate', function () {
 })
 
 ioHook.on('keydown', event => {
-  leftBar.webContents.send('keyDown', event.rawcode)
-  rightBar.webContents.send('keyDown', event.rawcode)
-  topBar.webContents.send('keyDown', event.rawcode)
-  bottomBar.webContents.send('keyDown')
+  if (!transparentScreen.isVisible()) {  //maybe I don't want this, no keymap while image is on
+    leftBar.webContents.send('keyDown', event.rawcode)
+    rightBar.webContents.send('keyDown', event.rawcode)
+    topBar.webContents.send('keyDown', event.rawcode)
+    bottomBar.webContents.send('keyDown')
+  }
 })
 
 ioHook.start();
