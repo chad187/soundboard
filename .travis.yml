@@ -1,14 +1,3 @@
-language: node_js
-node_js:
-  - "node"
-
-# whitelist
-branches:
-  only:
-    - master
-    - travis
-
-
 matrix:
   include:
     - os: osx
@@ -48,3 +37,10 @@ before_cache:
 branches:
   except:
     - "/^v\\d+\\.\\d+\\.\\d+$/"
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  on:
+    branch:gh-pages
