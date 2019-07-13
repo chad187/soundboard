@@ -1,4 +1,12 @@
 language: node_js
+node_js:
+  - "node"
+
+# whitelist
+branches:
+  only:
+    - master
+    - travis
 
 
 matrix:
