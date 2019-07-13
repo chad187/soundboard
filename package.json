@@ -4,15 +4,16 @@
   "description": "tool for teachers",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds",
+    "package-win": "electron-packager . --overwrite --asar=false --prune=true --out=release-builds",
+    "package-linux": "electron-packager . --overwrite --asar=false --platform=linux --arch=x64 --prune=true --out=release-builds",
+    "package-all": "electron-packager . --all"
   },
   "repository": "https://github.com/electron/electron-quick-start",
   "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
+    "Soundboard",
+    "teaching"
   ],
   "author": "GitHub",
   "license": "CC0-1.0",
