@@ -372,7 +372,6 @@ function keyCodeToLetter(keycode) {
 }
 
 ipcRenderer.on('keyDown', (event, keycode) => {
-	console.log('testing')
 	if (isSelected && isKeyMap) {
 		if (keyMap.size == 0) {
 			keyMap.set(toMap.id, keycode)

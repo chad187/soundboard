@@ -12,8 +12,8 @@ let leftBar
 let bottomBar
 let topBar
 
-const storage = require('electron-json-storage');
-storage.setDataPath(app.getAppPath())
+const storage = require('electron-json-storage')
+storage.setDataPath(require("os").homedir() + '/Documents/soundboard/')
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -167,16 +167,18 @@ function createWindow () {
 
   ipcMain.on('return-prompt', (event, name, side, id) => {
     transparentScreen.hide()
-    var temp = name.replace("\'", "");
-    eval(`${side}Bar.webContents.send('return-prompt', '${temp}', '${id}')`)
-    getSettings
-      .then(function (settings) {
-        eval(`settings.${side}.${id}text = '${temp}'`)  //works because it is not an address
-        saveSettings(settings)
-      })
-      .catch(function (error) {
-        console.log(error)
-      })
+    if(name) {
+      var temp = name.replace("\'", "");
+      eval(`${side}Bar.webContents.send('return-prompt', '${temp}', '${id}')`)
+      getSettings
+        .then(function (settings) {
+          eval(`settings.${side}.${id}text = '${temp}'`)  //works because it is not an address
+          saveSettings(settings)
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    }
   })
 
   ipcMain.on('change-image', (event, file, side, id) => {

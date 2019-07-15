@@ -4,7 +4,7 @@ const dialogs = Dialogs()
 let dropZone = document.getElementById('image')
 
 ipcRenderer.on('show-prompt', (event, text, side, id) => {
-  dialogs.prompt('Give it a name', 'No Description', ok => {
+  dialogs.prompt('Give it a name', text.slice(0, -4).split("\\").pop(), ok => {
 		ipcRenderer.send('return-prompt', ok, side, id)
 	})
 });
