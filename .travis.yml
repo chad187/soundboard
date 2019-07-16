@@ -40,8 +40,9 @@ branches:
 
 deploy:
   provider: releases
-  github_token: $GITHUB_TOKEN
-  file: "release-builds/soundboard-darwin-x64"
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: "release-builds/*"
   skip_cleanup: true
   on:
     tags: true
