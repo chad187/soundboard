@@ -29,7 +29,7 @@ script:
         electronuserland/builder:wine \
         /bin/bash -c "yarn --link-duplicates --pure-lockfile && yarn release --linux --win"
     else
-      yarn package-mac
+      yarn package-mac && cd release-builds && zip soundboard-mac
     fi
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
@@ -41,8 +41,7 @@ branches:
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
-  file_glob: true
-  file: "release-builds/*"
+  file: "release-builds/soundboard-mac.zip"
   skip_cleanup: true
   on:
     tags: true
