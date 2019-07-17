@@ -41,7 +41,7 @@ branches:
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
-  file: "release-builds/soundboard-mac.zip"
+  file: "soundboard-mac.zip"
   skip_cleanup: true
   on:
     tags: true
