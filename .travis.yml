@@ -27,10 +27,12 @@ script:
         -v ~/.cache/electron:/root/.cache/electron \
         -v ~/.cache/electron-builder:/root/.cache/electron-builder \
         electronuserland/builder:wine \
-        /bin/bash -c "yarn --link-duplicates --pure-lockfile && yarn release --linux --win"
-    else
-      yarn package-all && zip -r Soundboards.zip release-builds/*
+        /bin/bash -c "yarn package-win"
     fi
+    if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      yarn package-mac
+    fi
+    zip -r Soundboards.zip release-builds/*
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
