@@ -1,14 +1,16 @@
-matrix:
+jobs:
   include:
-
-    - os: windows
+    - stage: building
+      name: pc
+      os: windows
       language: node_js
       node_js: "10"
       env:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
 
-    - os: osx
+    - name: mac
+      os: osx
       osx_image: xcode10.2
       language: node_js
       node_js: "10"
@@ -16,12 +18,7 @@ matrix:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
 
-jobs:
-  include:
-    - stage: build
-      script: ./script
-      stage: deploy
-      script: skip
+    - stage: deploy
       deploy:
       provider: releases
       api_key: $GITHUB_TOKEN
@@ -30,7 +27,7 @@ jobs:
       skip_cleanup: true
       on:
         tags: true
-      
+
 cache:
   directories:
     - node_modules
