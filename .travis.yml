@@ -21,7 +21,6 @@ jobs:
         provider: releases
         api_key: $GITHUB_TOKEN
         file: "Soundboard-mac.zip"
-        file: "Soundboard-pc.zip"
         skip_cleanup: true
         on:
           tags: true
