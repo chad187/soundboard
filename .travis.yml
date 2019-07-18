@@ -25,7 +25,7 @@ cache:
 script:
   - |
     if [ "$TRAVIS_OS_NAME" == "windows" ]; then
-      yarn package-win && powershell && Compress-Archive -Path release-builds/pc -DestinationPath Soundboard-pc
+      yarn package-win && powershell Compress-Archive -Path release-builds/pc -DestinationPath Soundboard-pc
     fi
     if [ "$TRAVIS_OS_NAME" == "osx" ]; then
       yarn package-mac &&  zip -r Soundboard-mac.zip release-builds/mac
