@@ -19,7 +19,7 @@ matrix:
 jobs:
   include:
     - stage: deploy
-      script: skip
+      script: ./script
       deploy:
       provider: releases
       api_key: $GITHUB_TOKEN
