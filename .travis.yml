@@ -16,14 +16,15 @@ jobs:
 
     - stage: deploy
       name: deploy to github
+      script: echo "Deploying to GitHub releases ..."
       deploy:
-      provider: releases
-      api_key: $GITHUB_TOKEN
-      file: "Soundboard-mac.zip"
-      file: "Soundboard-pc.zip"
-      skip_cleanup: true
-      on:
-        tags: true
+        provider: releases
+        api_key: $GITHUB_TOKEN
+        file: "Soundboard-mac.zip"
+        file: "Soundboard-pc.zip"
+        skip_cleanup: true
+        on:
+          tags: true
 
 script:
   - |
