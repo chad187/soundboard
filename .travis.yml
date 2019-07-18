@@ -1,44 +1,50 @@
-cache:
-  directories:
-    - node_modules
-    - $HOME/.cache/electron
-    - $HOME/.cache/electron-builder
-
-jobs:
+matrix:
   include:
-    - stage: build
-      os: windows
+
+    - os: windows
       language: node_js
       node_js: "10"
       env:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
-      name: pc
-      script: yarn package-win && powershell Compress-Archive -Path release-builds/pc -DestinationPath Soundboard-pc
-      name: mac
-      os: osx
+
+    - os: osx
       osx_image: xcode10.2
       language: node_js
       node_js: "10"
       env:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
-      script: yarn package-mac &&  zip -r Soundboard-mac.zip release-builds/mac
-    - stage: deploy
-      script: ./deploy
 
+jobs:
+  include:
+    - stage: deploy
+      script: skip
+      deploy:
+      provider: releases
+      api_key: $GITHUB_TOKEN
+      file: "Soundboard-mac.zip"
+      file: "Soundboard-pc.zip"
+      skip_cleanup: true
+      on:
+        tags: true
+      
+cache:
+  directories:
+    - node_modules
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+
+script:
+  - |
+    if [ "$TRAVIS_OS_NAME" == "windows" ]; then
+      yarn package-win && powershell Compress-Archive -Path release-builds/pc -DestinationPath Soundboard-pc
+    else
+      yarn package-mac &&  zip -r Soundboard-mac.zip release-builds/mac
+    fi
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
 branches:
   except:
     - "/^v\\d+\\.\\d+\\.\\d+$/"
-
-deploy:
-  provider: releases
-  api_key: $GITHUB_TOKEN
-  file: "Soundboard-mac.zip"
-  file: "Soundboard-pc.zip"
-  skip_cleanup: true
-  on:
-    tags: true
