@@ -26,9 +26,8 @@ script:
   - |
     if [ "$TRAVIS_OS_NAME" == "windows" ]; then
       yarn package-win && powershell Compress-Archive -Path release-builds/pc -DestinationPath Soundboard-pc
-      if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-        yarn package-mac &&  zip -r Soundboard-mac.zip release-builds/mac
-      fi
+    else
+      yarn package-mac &&  zip -r Soundboard-mac.zip release-builds/mac
     fi
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
