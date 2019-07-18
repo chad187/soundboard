@@ -8,6 +8,14 @@ matrix:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
 
+    - os: osx
+      osx_image: xcode10.2
+      language: node_js
+      node_js: "10"
+      env:
+        - ELECTRON_CACHE=$HOME/.cache/electron
+        - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+
 cache:
   directories:
     - node_modules
@@ -17,12 +25,11 @@ cache:
 script:
   - |
     if [ "$TRAVIS_OS_NAME" == "windows" ]; then
-      yarn package-win
+      yarn package-win && powershell && Compress-Archive -LiteralPath release-builds/pc -DestinationPath Soundboard-pc
     fi
     if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-      yarn package-mac
+      yarn package-mac &&  zip -r Soundboard-mac.zip release-builds/mac
     fi
-    zip -r Soundboards.zip release-builds/*
 before_cache:
   - rm -rf $HOME/.cache/electron-builder/wine
 
@@ -33,7 +40,8 @@ branches:
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
-  file: "Soundboards.zip"
+  file: "Soundboard-mac.zip"
+  file: "Soundboard-pc.zip"
   skip_cleanup: true
   on:
     tags: true
