@@ -19,6 +19,11 @@ button {
 	/*overflow: hidden;*/
 }
 
+#credits {
+	float:right;
+	margin-top:10px;
+}
+
 #mainBox {
 	height:100%;
 	width:80%;

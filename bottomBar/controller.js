@@ -1,8 +1,22 @@
 const {ipcRenderer} = require('electron')
+const { shell } = require('electron')
 
 let imageButton = document.getElementById("image")
 let sampleButton = document.getElementById("sample")
 let keyMapButton = document.getElementById("keyMap")
+let credits = document.getElementById('credits')
+
+window.onload = function() {
+  setTimeout(() => {
+  	while (credits.hasChildNodes()) {
+    	credits.removeChild(credits.lastChild);
+		}
+  }, 30000)
+};
+
+function openBrowser() {
+	shell.openExternal('https://youtu.be/W5gzAKEhllw')
+}
 
 function handleChange(checkbox) {
     ipcRenderer.send('toggle-panel', checkbox.id, checkbox.checked)
