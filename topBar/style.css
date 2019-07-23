@@ -11,6 +11,7 @@ span {
     background: black;
     color: white;
     display:inline-block;
+    word-break: break-all;
 }
 
 span:nth-child(2) {

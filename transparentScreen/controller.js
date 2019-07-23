@@ -10,8 +10,5 @@ ipcRenderer.on('show-prompt', (event, text, side, id) => {
 });
 
 ipcRenderer.on('change-image', (event, file) => {
-	console.log(file)
-	console.log(dropZone.src)
 	dropZone.src = file
-	console.log(dropZone.src)
 });
