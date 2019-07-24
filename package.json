@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds/mac",
-    "package-win": "electron-packager . --overwrite --prune=true --out=release-builds/pc",
+    "package-win": "electron-packager . --overwrite --asar=true --prune=true --out=release-builds/pc",
     "package-linux": "electron-packager . --overwrite --asar=false --platform=linux --arch=x64 --prune=true --out=release-builds",
     "package-all": "yarn package-mac && yarn package-win"
   },
@@ -25,7 +25,7 @@
     "dialogs": "^2.0.1",
     "electron-json-storage": "^4.1.6",
     "electron-positioner": "^4.1.0",
-    "iohook": "^0.4.6",
+    "iohook": "^0.5.1",
     "webrtc-adapter": "^4.2.2"
   },
   "cmake-js": {
