@@ -52,7 +52,7 @@ function drop(e) {
 	e.stopPropagation();
   e.preventDefault();
   var files = e.dataTransfer.files; // Array of all files
-  let images = ['gif', 'jpg', 'jpeg']
+  let images = ['gif', 'jpg', 'jpeg', 'png']
   let sounds = ['mp3', 'mp4']
 
   for (var i=0, file; file=files[i]; i++) {
