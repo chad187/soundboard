@@ -1,19 +1,27 @@
 button {
-	width:9.73%;
+	width:10.73%;
 	height:100%;
 	background-size: cover;
 	color: white;
 	background-color: black;
+  overflow: hidden;
 }
 
-span {
-    text-align: center;
-    background: black;
-    color: white;
-    display:inline-block;
-    word-break: break-all;
+.innerFirst {
+  text-align: center;
+  background: rgba(0,0,0,.4);
+  color: white;
+  white-space: nowrap;
+  font-size: 1em;
 }
 
-span:nth-child(2) {
-  background: red;
+.innerSecond {
+  color: white;
+  background: rgba(255,0,0,.6);
+  font-size: 1em;
+  display: unset;
+}
+
+#outer {
+    display: flex;
 }

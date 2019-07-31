@@ -429,52 +429,52 @@ ipcRenderer.on('update-keymap', (event, tempKeyMap) => {
 
 ipcRenderer.on('initialize', (event, settings) => {
 	buildMap(settings.keymap)
-	drop0.children[0].firstChild.data = settings.drop0text
+	drop0.children[0].firstChild.data = settings.drop0text != undefined ? settings.drop0text : ''
 	drop0.src = settings.drop0sound
 	if (keyMap.has('drop0')) document.getElementById('drop0').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop0'))
 	if(settings.drop0image) drop0.style.backgroundImage = `url('${addSlashes(settings.drop0image)}')`
 
-	drop1.children[0].firstChild.data = settings.drop1text
+	drop1.children[0].firstChild.data = settings.drop1text != undefined ? settings.drop1text : ''
 	drop1.src = settings.drop1sound
 	if (keyMap.has('drop1')) document.getElementById('drop1').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop1'))
 	if(settings.drop1image) drop1.style.backgroundImage = `url('${addSlashes(settings.drop1image)}')`
 
-	drop2.children[0].firstChild.data = settings.drop2text
+	drop2.children[0].firstChild.data = settings.drop2text != undefined ? settings.drop2text : ''
 	drop2.src = settings.drop2sound
 	if (keyMap.has('drop2')) document.getElementById('drop2').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop2'))
 	if(settings.drop2image) drop2.style.backgroundImage = `url('${addSlashes(settings.drop2image)}')`
 
-	drop3.children[0].firstChild.data = settings.drop3text
+	drop3.children[0].firstChild.data = settings.drop3text != undefined ? settings.drop3text : ''
 	drop3.src = settings.drop3sound
 	if (keyMap.has('drop3')) document.getElementById('drop3').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop3'))
 	if(settings.drop3image) drop3.style.backgroundImage = `url('${addSlashes(settings.drop3image)}')`
 
-	drop4.children[0].firstChild.data = settings.drop4text
+	drop4.children[0].firstChild.data = settings.drop4text != undefined ? settings.drop4text : ''
 	drop4.src = settings.drop4sound
 	if (keyMap.has('drop4')) document.getElementById('drop4').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop4'))
 	if(settings.drop4image) drop4.style.backgroundImage = `url('${addSlashes(settings.drop4image)}')`
 
-	drop5.children[0].firstChild.data = settings.drop5text
+	drop5.children[0].firstChild.data = settings.drop5text != undefined ? settings.drop5text : ''
 	drop5.src = settings.drop5sound
 	if (keyMap.has('drop5')) document.getElementById('drop5').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop5'))
 	if(settings.drop5image) drop5.style.backgroundImage = `url('${addSlashes(settings.drop5image)}')`
 
-	drop6.children[0].firstChild.data = settings.drop6text
+	drop6.children[0].firstChild.data = settings.drop6text != undefined ? settings.drop6text : ''
 	drop6.src = settings.drop6sound
 	if (keyMap.has('drop6')) document.getElementById('drop6').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop6'))
 	if(settings.drop6image) drop6.style.backgroundImage = `url('${addSlashes(settings.drop6image)}')`
 
-	drop7.children[0].firstChild.data = settings.drop7text
+	drop7.children[0].firstChild.data = settings.drop7text != undefined ? settings.drop7text : ''
 	drop7.src = settings.drop7sound
 	if (keyMap.has('drop7')) document.getElementById('drop7').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop7'))
 	if(settings.drop7image) drop7.style.backgroundImage = `url('${addSlashes(settings.drop7image)}')`
 
-	drop8.children[0].firstChild.data = settings.drop8text
+	drop8.children[0].firstChild.data = settings.drop8text != undefined ? settings.drop8text : ''
 	drop8.src = settings.drop8sound
 	if (keyMap.has('drop8')) document.getElementById('drop8').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop8'))
 	if(settings.drop8image) drop8.style.backgroundImage = `url('${addSlashes(settings.drop8image)}')`
 
-	drop9.children[0].firstChild.data = settings.drop9text
+	drop9.children[0].firstChild.data = settings.drop9text != undefined ? settings.drop9text : ''
 	drop9.src = settings.drop9sound
 	if (keyMap.has('drop9')) document.getElementById('drop9').children[1].firstChild.data = keyCodeToLetter(keyMap.get('drop9'))
 	if(settings.drop9image) drop9.style.backgroundImage = `url('${addSlashes(settings.drop9image)}')`
