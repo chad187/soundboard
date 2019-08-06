@@ -52,8 +52,8 @@ function drop(e) {
 	e.stopPropagation();
   e.preventDefault();
   var files = e.dataTransfer.files; // Array of all files
-  let images = ['gif', 'jpg', 'jpeg', 'png']
-  let sounds = ['mp3', 'mp4']
+  let images = ['gif', 'jpg', 'jpeg', 'png', 'bmp']
+  let sounds = ['mp3', 'wma', 'wav']
 
   for (var i=0, file; file=files[i]; i++) {
   	let extension = file.path.split('.')[1] //this is error prone way
@@ -421,6 +421,7 @@ ipcRenderer.on('update-keymap', (event, tempKeyMap) => {
 	    	let oldSpan =oldButton.children[1].firstChild
 	    	oldSpan.data = null
 	    	keyMap.delete(id)
+	    	ipcRenderer.send('clean-keyMap', "right", JSON.stringify([...keyMap]))
 	    	break
 	    }
 		}

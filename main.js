@@ -271,6 +271,17 @@ function createWindow () {
       })
   })
 
+  ipcMain.on('clean-keyMap', (event, side, keyMap) => {
+    getSettings
+      .then(function (settings) {
+        eval(`settings.${side}.keymap = ${keyMap}`)
+        saveSettings(settings)
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
+  })
+
   ipcMain.on('toggle-panel', (event, side, isChecked) => {
     if (isChecked) {
       eval(`${side}Bar.show()`)
@@ -333,6 +344,7 @@ function initializeDB() {
       })
     })
     .catch(function (error) {
+      console.log("Did not detect DB, creating a new one and quitting. Here is actual error: ", error)
       saveSettings({left: {}, right: {}, top: {}, bottom: {isImage:true, left:true, top:true, right :true}})
       app.quit()
     })
