@@ -103,11 +103,29 @@ function createWindow () {
   bottomBar.loadURL('file://' + __dirname + '/bottomBar/index.html')
   transparentScreen.loadURL('file://' + __dirname + '/transparentScreen/index.html')
 
-  transparentScreen.setAlwaysOnTop(true, 'screen');
-  rightBar.setAlwaysOnTop(true, 'screen');
-  leftBar.setAlwaysOnTop(true, 'screen');
-  topBar.setAlwaysOnTop(true, 'screen');
-  bottomBar.setAlwaysOnTop(true, 'screen');
+  app.dock.hide()
+
+  transparentScreen.setAlwaysOnTop(true, 'floating')
+  transparentScreen.setVisibleOnAllWorkspaces(true)
+  transparentScreen.setFullScreenable(false)
+
+  rightBar.setAlwaysOnTop(true, 'floating')
+  rightBar.setVisibleOnAllWorkspaces(true)
+  rightBar.setFullScreenable(false)
+
+  leftBar.setAlwaysOnTop(true, 'floating')
+  leftBar.setVisibleOnAllWorkspaces(true)
+  leftBar.setFullScreenable(false)
+
+  topBar.setAlwaysOnTop(true, 'floating')
+  topBar.setVisibleOnAllWorkspaces(true)
+  topBar.setFullScreenable(false)
+
+  bottomBar.setAlwaysOnTop(true, 'floating');
+  bottomBar.setVisibleOnAllWorkspaces(true)
+  bottomBar.setFullScreenable(false)
+
+  app.dock.show()
 
 
   // and load the index.html of the app.
