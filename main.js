@@ -1,8 +1,8 @@
 // Modules to control application life and create native browser window
 const electron = require('electron')
 const {app, BrowserWindow, ipcMain} = require('electron')
-const Positioner = require('electron-positioner')
-const ioHook = require('iohook');
+var os = require('os')
+const ioHook = require('iohook')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -54,7 +54,9 @@ function createWindow () {
     },
     width: bottomWidth,
     height: smallHeight,
-    frame: false
+    frame: false,
+    x: smallWidth,
+    y: Math.floor(height * .925)
   })
 
   rightBar = new BrowserWindow({
@@ -64,7 +66,9 @@ function createWindow () {
     },
     width: smallWidth,
     height: height,
-    frame: false
+    frame: false,
+    x: width - smallWidth,
+    y: 0
   })
 
   leftBar = new BrowserWindow({
@@ -74,7 +78,9 @@ function createWindow () {
     },
     width: smallWidth,
     height: height,
-    frame: false
+    frame: false,
+    x: 0,
+    y: 0
   })
 
   transparentScreen = new BrowserWindow({
@@ -84,7 +90,9 @@ function createWindow () {
     },
     transparent:true,
     frame: false,
-    show: false
+    show: false,
+    x: width * .25,
+    y: height * .2
   })
 
   topBar = new BrowserWindow({
@@ -94,7 +102,9 @@ function createWindow () {
     },
     width: bottomWidth,
     height: smallHeight,
-    frame: false
+    frame: false,
+    x: smallWidth,
+    y: 0
   })
 
   rightBar.loadURL('file://' + __dirname + '/rightBar/index.html')
@@ -103,7 +113,7 @@ function createWindow () {
   bottomBar.loadURL('file://' + __dirname + '/bottomBar/index.html')
   transparentScreen.loadURL('file://' + __dirname + '/transparentScreen/index.html')
 
-  app.dock.hide()
+  if (os.platform() == 'darwin') app.dock.hide()
 
   transparentScreen.setAlwaysOnTop(true, 'floating')
   transparentScreen.setVisibleOnAllWorkspaces(true)
@@ -125,23 +135,12 @@ function createWindow () {
   bottomBar.setVisibleOnAllWorkspaces(true)
   bottomBar.setFullScreenable(false)
 
-  app.dock.show()
+  if (os.platform() == 'darwin') app.dock.show()
 
 
   // and load the index.html of the app.
   // transparentScreen.loadFile('transparentScreen.html')
   // transparentScreen.maximize()
-
-  let rightPositioner = new Positioner(rightBar)
-  let leftPositioner = new Positioner(leftBar)
-  let topPositioner = new Positioner(topBar)
-  let bottomPositioner = new Positioner(bottomBar)
-
-  // Moves the window top right on the screen.
-  rightPositioner.move('topRight')
-  leftPositioner.move('topLeft')
-  topPositioner.move('topCenter')
-  bottomPositioner.move('bottomCenter')
 
   initializeDB()
 
