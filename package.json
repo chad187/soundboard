@@ -25,6 +25,7 @@
     "dialogs": "^2.0.1",
     "electron-json-storage": "^4.1.6",
     "iohook": "^0.5.1",
+    "os-keycode": "^1.0.0",
     "webrtc-adapter": "^4.2.2"
   },
   "cmake-js": {
