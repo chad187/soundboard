@@ -364,6 +364,7 @@ function initializeDB() {
     .catch(function (error) {
       console.log("Did not detect DB, creating a new one and quitting. Here is actual error: ", error)
       saveSettings({left: {}, right: {}, top: {}, bottom: {isImage:true, left:true, top:true, right :true}})
+      app.quit()
       app.relaunch()
     })
 }
