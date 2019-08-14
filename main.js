@@ -1,7 +1,7 @@
 // Modules to control application life and create native browser window
 const electron = require('electron')
 const {app, BrowserWindow, ipcMain} = require('electron')
-var os = require('os')
+let os = require('os')
 const ioHook = require('iohook')
 
 // Keep a global reference of the window object, if you don't, the window will
