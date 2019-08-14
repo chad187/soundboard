@@ -318,13 +318,10 @@ function createWindow () {
   })
 
   ipcMain.on('minimize', (event) => {
-    if(os.) app.hide()
-    else {
-      if (leftBar.isVisible()) leftBar.minimize()
-      if (rightBar.isVisible()) rightBar.minimize()  
-      if (topBar.isVisible()) topBar.minimize()
-      bottomBar.minimize()
-    }  
+    if (leftBar.isVisible()) leftBar.minimize()
+    if (rightBar.isVisible()) rightBar.minimize()  
+    if (topBar.isVisible()) topBar.minimize()
+    bottomBar.minimize()
   })
 
   ipcMain.on('close', (event) => {
