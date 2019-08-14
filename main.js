@@ -318,14 +318,26 @@ function createWindow () {
   })
 
   ipcMain.on('minimize', (event) => {
-    if (leftBar.isVisible()) leftBar.minimize()
-    if (rightBar.isVisible()) rightBar.minimize()  
-    if (topBar.isVisible()) topBar.minimize()
+    if (leftBar.isVisible()) leftBar.hide()
+    if (rightBar.isVisible()) rightBar.hide()  
+    if (topBar.isVisible()) topBar.hide()
     bottomBar.minimize()
   })
 
   ipcMain.on('close', (event) => {
     app.quit()
+  })
+
+  bottomBar.on('restore', () => {
+    getSettings
+      .then(function (settings) {
+        if (settings.bottom.left) leftBar.restore()
+        if (settings.bottom.right) rightBar.restore()
+        if (settings.bottom.top) topBar.restore()
+      })
+      .catch(function (error) {
+        console.log(error)
+      })
   })
 }
 
