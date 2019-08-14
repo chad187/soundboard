@@ -47,7 +47,8 @@ function createWindow () {
   const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize
   let smallWidth = Math.floor(width * .05)
   let smallHeight = Math.floor(height * .07)
-  let bottomWidth = width - 2 * smallWidth 
+  let bottomWidth = width - 2 * smallWidth
+  let osDependentHeight = os.platform() == 'darwin' ? height : Math.floor(height * .93)
   bottomBar = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true
@@ -56,7 +57,7 @@ function createWindow () {
     height: smallHeight,
     frame: false,
     x: smallWidth,
-    y: Math.floor(height * .925)
+    y: osDependentHeight
   })
 
   rightBar = new BrowserWindow({

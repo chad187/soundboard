@@ -1313,6 +1313,11 @@ optionator@^0.8.1:
     type-check "~0.3.2"
     wordwrap "~1.0.0"
 
+os-keycode@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/os-keycode/-/os-keycode-1.0.0.tgz#8a185d73bd7ac7eb38f69fd489f7eebd8fce609b"
+  integrity sha512-a4BRXYTtu2Hxs6CO2/mNQOg7ClTcp7gcK3bVR6T5A0D8CBJsiuKKseQLwcl2WjkSoMakRll8VGtKVYw1OPl51g==
+
 p-cancelable@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/p-cancelable/-/p-cancelable-1.1.0.tgz#d078d15a3af409220c886f1d9a0ca2e441ab26cc"
