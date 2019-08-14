@@ -318,10 +318,13 @@ function createWindow () {
   })
 
   ipcMain.on('minimize', (event) => {
-    if (leftBar.isVisible()) leftBar.minimize()
-    if (rightBar.isVisible()) rightBar.minimize()  
-    if (topBar.isVisible()) topBar.minimize()
-    bottomBar.minimize()
+    if(os.) app.hide()
+    else {
+      if (leftBar.isVisible()) leftBar.minimize()
+      if (rightBar.isVisible()) rightBar.minimize()  
+      if (topBar.isVisible()) topBar.minimize()
+      bottomBar.minimize()
+    }  
   })
 
   ipcMain.on('close', (event) => {
@@ -364,7 +367,7 @@ function initializeDB() {
     .catch(function (error) {
       console.log("Did not detect DB, creating a new one and quitting. Here is actual error: ", error)
       saveSettings({left: {}, right: {}, top: {}, bottom: {isImage:true, left:true, top:true, right :true}})
-      app.quit()
+      app.relaunch()
     })
 }
 
