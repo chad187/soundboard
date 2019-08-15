@@ -27,7 +27,7 @@ function minimize() {
 }
 
 function closeApp() {
-	ipcRenderer.send('close')
+	require('electron').remote.getCurrentWindow().close();
 }
 
 function image() {
