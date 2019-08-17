@@ -7,6 +7,7 @@ const ioHook = require('iohook')
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let transparentScreen
+let extendedTransparentScreen
 let rightBar
 let leftBar
 let bottomBar
@@ -49,6 +50,7 @@ function createWindow () {
   let smallHeight = Math.floor(height * .07)
   let bottomWidth = width - 2 * smallWidth
   let osDependentHeight = os.platform() == 'darwin' ? height : Math.floor(height * .93)
+
   bottomBar = new BrowserWindow({
     webPreferences: {
       nodeIntegration: true
@@ -108,6 +110,33 @@ function createWindow () {
     y: 0
   })
 
+  let electronScreen = electron.screen;
+  let displays = electronScreen.getAllDisplays();
+  let externalDisplay = null;
+  for (var i in displays) {
+    if (displays[i].bounds.x != 0 || displays[i].bounds.y != 0) {
+      externalDisplay = displays[i];
+      break;
+    }
+  }
+
+  if (externalDisplay) {
+    const { width, height } = externalDisplay.workAreaSize
+    extendedTransparentScreen = new BrowserWindow({
+      parent: bottomBar,
+      webPreferences: {
+        nodeIntegration: true
+      },
+      width: width,
+      height: height,
+      transparent:true,
+      frame: false,
+      show: false,
+      x: externalDisplay.bounds.x,
+      y: externalDisplay.bounds.y
+    })
+  }
+
   rightBar.loadURL('file://' + __dirname + '/rightBar/index.html')
   leftBar.loadURL('file://' + __dirname + '/leftBar/index.html')
   topBar.loadURL('file://' + __dirname + '/topBar/index.html')
@@ -119,6 +148,16 @@ function createWindow () {
   transparentScreen.setAlwaysOnTop(true, 'floating')
   transparentScreen.setVisibleOnAllWorkspaces(true)
   transparentScreen.setFullScreenable(false)
+
+  if(extendedTransparentScreen) {
+    extendedTransparentScreen.loadURL('file://' + __dirname + '/transparentScreen/index.html')
+    extendedTransparentScreen.setAlwaysOnTop(true, 'floating')
+    extendedTransparentScreen.setVisibleOnAllWorkspaces(true)
+    extendedTransparentScreen.setFullScreenable(false)
+    extendedTransparentScreen.on('closed', function () {
+    extendedTransparentScreen = null
+  })
+  }
 
   rightBar.setAlwaysOnTop(true, 'floating')
   rightBar.setVisibleOnAllWorkspaces(true)
@@ -138,11 +177,6 @@ function createWindow () {
 
   if (os.platform() == 'darwin') app.dock.show()
 
-
-  // and load the index.html of the app.
-  // transparentScreen.loadFile('transparentScreen.html')
-  // transparentScreen.maximize()
-
   initializeDB()
 
   // Open the DevTools.
@@ -150,9 +184,6 @@ function createWindow () {
 
   // Emitted when the window is closed.
   transparentScreen.on('closed', function () {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
     transparentScreen = null
   })
 
@@ -162,7 +193,14 @@ function createWindow () {
         if (settings.bottom.isImage) {
           transparentScreen.webContents.send('change-image', file)
           transparentScreen.show()
-          setTimeout(() => transparentScreen.hide(), 2500)
+          if (extendedTransparentScreen) {
+            extendedTransparentScreen.webContents.send('change-image', file)
+            extendedTransparentScreen.show()
+          }
+          setTimeout(() => {
+            transparentScreen.hide()
+            if (extendedTransparentScreen) extendedTransparentScreen.hide()
+          }, 2500)
         }
       })
       .catch(function (error) {
@@ -173,6 +211,10 @@ function createWindow () {
   ipcMain.on('show-prompt', (event, file, side, id) => {
     transparentScreen.webContents.send('show-prompt', file, side, id);
     transparentScreen.show()
+    if (extendedTransparentScreen) {
+      extendedTransparentScreen.webContents.send('show-prompt', file, side, id);
+      extendedTransparentScreen.show()
+    }
     getSettings
       .then(function (settings) {
         eval(`settings.${side}.${id}sound = ${String.raw`file`}`)
@@ -185,6 +227,7 @@ function createWindow () {
 
   ipcMain.on('return-prompt', (event, name, side, id) => {
     transparentScreen.hide()
+    if (extendedTransparentScreen) extendedTransparentScreen.hide()
     if(name) {
       var temp = name.replace("\'", "");
       eval(`${side}Bar.webContents.send('return-prompt', '${temp}', '${id}')`)
@@ -400,7 +443,7 @@ app.on('activate', function () {
 })
 
 ioHook.on('keydown', event => {
-  if (!transparentScreen.isVisible()) {  //maybe I don't want this, no keymap while image is on
+  if (!transparentScreen.isVisible() || !extendedTransparentScreen.isVisible()) {  //maybe I don't want this, no keymap while image is on
     leftBar.webContents.send('keyDown', event.rawcode)
     rightBar.webContents.send('keyDown', event.rawcode)
     topBar.webContents.send('keyDown', event.rawcode)
