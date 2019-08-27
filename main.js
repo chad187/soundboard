@@ -443,7 +443,7 @@ app.on('activate', function () {
 })
 
 ioHook.on('keydown', event => {
-  if (!transparentScreen.isVisible() || !extendedTransparentScreen.isVisible()) {  //maybe I don't want this, no keymap while image is on
+  if (!transparentScreen.isVisible()) {  //maybe I don't want this, no keymap while image is on
     leftBar.webContents.send('keyDown', event.rawcode)
     rightBar.webContents.send('keyDown', event.rawcode)
     topBar.webContents.send('keyDown', event.rawcode)
