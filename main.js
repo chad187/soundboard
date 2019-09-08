@@ -374,9 +374,9 @@ function createWindow () {
   bottomBar.on('restore', () => {
     getSettings
       .then(function (settings) {
-        if (settings.bottom.left) leftBar.restore()
-        if (settings.bottom.right) rightBar.restore()
-        if (settings.bottom.top) topBar.restore()
+        if (settings.bottom.left) leftBar.show()
+        if (settings.bottom.right) rightBar.show()
+        if (settings.bottom.top) topBar.show()
       })
       .catch(function (error) {
         console.log(error)
