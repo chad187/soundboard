@@ -15,7 +15,7 @@ window.onload = function() {
 };
 
 function openBrowser() {
-	shell.openExternal('https://youtu.be/W5gzAKEhllw')
+	shell.openExternal('https://youtu.be/9AJimznZddA')
 }
 
 function handleChange(checkbox) {
