@@ -12,6 +12,7 @@ let drop6 = document.getElementById('drop6');
 let drop7 = document.getElementById('drop7');
 let drop8 = document.getElementById('drop8');
 let drop9 = document.getElementById('drop9');
+let playingAudio = [];
 
 // Optional.   Show the copy icon when dragging over.  Seems to only work for chrome.
 drop0.addEventListener('dragover', dragover)
@@ -122,7 +123,27 @@ function playMedia(drop) {
 		ipcRenderer.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "right", drop)
 	  let audio = new Audio(pressed.src)
 	  audio.play()
+	  playingAudio.push(audio)
+	  audio.onended = (audio) => {completedAudio(audio)}
 	}
+}
+
+function completedAudio(audioSource) {
+	for(var i = 0; i < playingAudio.length; i++) {
+		if (audioSource.path[0].src == playingAudio[i].src) {
+			playingAudio.splice(i, 1)
+			break
+		}
+	}
+}
+
+function killAllAudio() {
+	playingAudio.forEach((value, index, array) => {
+		value.pause()
+		value.currentTime = 0
+	})
+	playingAudio = null
+	playingAudio = []
 }
 
 function saveFile(file) {
@@ -167,27 +188,33 @@ ipcRenderer.on('return-prompt', (event, name, id) => {
 })
 
 function checkMapAdd (keycode) {
-	for (var [id, code] of keyMap) {
-    if (code == keycode) {
-    	let oldButton = document.getElementById(id)
-    	let oldSpan =oldButton.children[1].firstChild
-    	oldSpan.data = null
-    	keyMap.delete(id)
-    	break
-    }
-  }
+	if (keycode == 27 || keycode == 53) alert("esc is for stopping audio")
+	else {	
+		for (var [id, code] of keyMap) {
+	    if (code == keycode) {
+	    	let oldButton = document.getElementById(id)
+	    	let oldSpan =oldButton.children[1].firstChild
+	    	oldSpan.data = null
+	    	keyMap.delete(id)
+	    	break
+	    }
+	  }	  
   keyMap.set(toMap.id, keycode)
 	let button = document.getElementById(toMap.id)
 	let span = button.children[1].firstChild
 	span.data = keyCodeToLetter(keycode)
+	}	
 }
 
 function checkMapPlay(keycode) {
-	for (var [id, code] of keyMap) {
-		if (code == keycode) {
-	  	playMedia(id)
-	  	break
-	  }
+	if (keycode == 27 || keycode == 53) killAllAudio()
+	else {
+		for (var [id, code] of keyMap) {
+			if (code == keycode) {
+		  	playMedia(id)
+		  	break
+		  }
+		}
 	}
 }
 
