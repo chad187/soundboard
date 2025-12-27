@@ -1,6 +1,20 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+#outer {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
 button {
-	width:10.73%;
+	width:10%;
 	height:100%;
+	flex: 1;
 	background-size: cover;
 	color: white;
 	background-color: black;
@@ -20,8 +34,4 @@ button {
   background: rgba(255,0,0,.6);
   font-size: 1em;
   display: unset;
-}
-
-#outer {
-    display: flex;
 }

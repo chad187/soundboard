@@ -1,16 +1,15 @@
-const {ipcRenderer} = require('electron')
-let os = require('os')
-const Dialogs = require('dialogs')
-const dialogs = Dialogs()
+// Use the electronAPI bridge from preload
+console.log('[DEBUG transparentScreen] Controller loaded, electronAPI:', window.electronAPI)
+
 let dropZone = document.getElementById('image')
 
-ipcRenderer.on('show-prompt', (event, text, side, id) => {
-	let splitter = os.platform() == 'darwin' ? "/" : "\\"
-  dialogs.prompt('Give it a name', text.slice(0, -4).split(splitter).pop(), ok => {
-		ipcRenderer.send('return-prompt', ok, side, id)
-	})
-});
+window.electronAPI.on('show-prompt', (text, side, id) => {
+	let splitter = window.electronAPI.getPlatform() == 'darwin' ? "/" : "\\"
+	let defaultName = text.slice(0, -4).split(splitter).pop()
+	let name = prompt('Give it a name', defaultName)
+	window.electronAPI.send('return-prompt', name, side, id)
+})
 
-ipcRenderer.on('change-image', (event, file) => {
+window.electronAPI.on('change-image', (file) => {
 	dropZone.src = file
-});
+})

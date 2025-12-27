@@ -1,8 +1,9 @@
 // Modules to control application life and create native browser window
 const electron = require('electron')
 const {app, BrowserWindow, ipcMain} = require('electron')
+const path = require('path')
 let os = require('os')
-const ioHook = require('iohook')
+const { uIOhook } = require('uiohook-napi')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -51,10 +52,18 @@ function createWindow () {
   let bottomWidth = width - 2 * smallWidth
   let osDependentHeight = os.platform() == 'darwin' ? height : Math.floor(height * .93)
 
+  const preloadPath = path.join(__dirname, 'preload.js')
+
+  // Common webPreferences for all windows
+  const webPrefs = {
+    nodeIntegration: false,
+    contextIsolation: true,
+    sandbox: false,  // Required for preload script to access Node.js APIs
+    preload: preloadPath
+  }
+
   bottomBar = new BrowserWindow({
-    webPreferences: {
-      nodeIntegration: true
-    },
+    webPreferences: webPrefs,
     width: bottomWidth,
     height: smallHeight,
     frame: false,
@@ -64,9 +73,7 @@ function createWindow () {
 
   rightBar = new BrowserWindow({
     parent: bottomBar,
-    webPreferences: {
-      nodeIntegration: true
-    },
+    webPreferences: webPrefs,
     width: smallWidth,
     height: height,
     frame: false,
@@ -76,9 +83,7 @@ function createWindow () {
 
   leftBar = new BrowserWindow({
     parent: bottomBar,
-    webPreferences: {
-      nodeIntegration: true
-    },
+    webPreferences: webPrefs,
     width: smallWidth,
     height: height,
     frame: false,
@@ -88,23 +93,21 @@ function createWindow () {
 
   transparentScreen = new BrowserWindow({
     parent: bottomBar,
-    webPreferences: {
-      nodeIntegration: true
-    },
+    webPreferences: webPrefs,
+    width: Math.floor(width * .5),
+    height: Math.floor(height * .6),
     transparent:true,
     frame: false,
     show: false,
-    x: width * .25,
-    y: height * .2
+    x: Math.floor(width * .25),
+    y: Math.floor(height * .2)
   })
 
   topBar = new BrowserWindow({
     parent: bottomBar,
-    webPreferences: {
-      nodeIntegration: true
-    },
+    webPreferences: webPrefs,
     width: bottomWidth,
-    height: smallHeight,
+    height: Math.floor(smallHeight * 1.425),
     frame: false,
     x: smallWidth,
     y: 0
@@ -121,27 +124,40 @@ function createWindow () {
   }
 
   if (externalDisplay) {
-    const { width, height } = externalDisplay.workAreaSize
+    const extBounds = externalDisplay.bounds
+    const scaleFactor = externalDisplay.scaleFactor || 1
+    // Divide by scaleFactor to get the actual pixel values Electron will use
+    const winWidth = Math.floor(extBounds.width * 0.5 / scaleFactor)
+    const winHeight = Math.floor(extBounds.height * 0.6 / scaleFactor)
+    // Calculate center position (also adjusted for scale)
+    const centerX = Math.floor(extBounds.x + (extBounds.width * 0.25 / scaleFactor))
+    const centerY = Math.floor(extBounds.y + (extBounds.height * 0.2 / scaleFactor))
+
+    console.log('[DEBUG] External display bounds:', extBounds)
+    console.log('[DEBUG] External display scaleFactor:', scaleFactor)
+    console.log('[DEBUG] Window size (scaled):', winWidth, 'x', winHeight)
+    console.log('[DEBUG] Window position (scaled):', centerX, ',', centerY)
+
     extendedTransparentScreen = new BrowserWindow({
-      parent: bottomBar,
-      webPreferences: {
-        nodeIntegration: true
-      },
-      width: width,
-      height: height,
-      transparent:true,
+      webPreferences: webPrefs,
+      width: winWidth,
+      height: winHeight,
+      x: centerX,
+      y: centerY,
+      transparent: true,
       frame: false,
       show: false,
-      x: externalDisplay.bounds.x,
-      y: externalDisplay.bounds.y
+      skipTaskbar: true
     })
+
+    console.log('[DEBUG] Actual window bounds:', extendedTransparentScreen.getBounds())
   }
 
-  rightBar.loadURL('file://' + __dirname + '/rightBar/index.html')
-  leftBar.loadURL('file://' + __dirname + '/leftBar/index.html')
-  topBar.loadURL('file://' + __dirname + '/topBar/index.html')
-  bottomBar.loadURL('file://' + __dirname + '/bottomBar/index.html')
-  transparentScreen.loadURL('file://' + __dirname + '/transparentScreen/index.html')
+  rightBar.loadFile(path.join(__dirname, 'rightBar', 'index.html'))
+  leftBar.loadFile(path.join(__dirname, 'leftBar', 'index.html'))
+  topBar.loadFile(path.join(__dirname, 'topBar', 'index.html'))
+  bottomBar.loadFile(path.join(__dirname, 'bottomBar', 'index.html'))
+  transparentScreen.loadFile(path.join(__dirname, 'transparentScreen', 'index.html'))
 
   if (os.platform() == 'darwin') app.dock.hide()
 
@@ -150,7 +166,7 @@ function createWindow () {
   transparentScreen.setFullScreenable(false)
 
   if(extendedTransparentScreen) {
-    extendedTransparentScreen.loadURL('file://' + __dirname + '/transparentScreen/index.html')
+    extendedTransparentScreen.loadFile(path.join(__dirname, 'transparentScreen', 'index.html'))
     extendedTransparentScreen.setAlwaysOnTop(true, 'floating')
     extendedTransparentScreen.setVisibleOnAllWorkspaces(true)
     extendedTransparentScreen.setFullScreenable(false)
@@ -179,8 +195,8 @@ function createWindow () {
 
   initializeDB()
 
-  // Open the DevTools.
-  // transparentScreen.webContents.openDevTools()
+  // Open the DevTools for debugging
+  //bottomBar.webContents.openDevTools({ mode: 'detach' })
 
   // Emitted when the window is closed.
   transparentScreen.on('closed', function () {
@@ -188,7 +204,7 @@ function createWindow () {
   })
 
   ipcMain.on('show-image', (event, file) => {
-    getSettings
+    getSettings()
       .then(function (settings) {
         if (settings.bottom.isImage) {
           transparentScreen.webContents.send('change-image', file)
@@ -209,13 +225,62 @@ function createWindow () {
   })
 
   ipcMain.on('show-prompt', (event, file, side, id) => {
-    transparentScreen.webContents.send('show-prompt', file, side, id);
-    transparentScreen.show()
-    if (extendedTransparentScreen) {
-      extendedTransparentScreen.webContents.send('show-prompt', file, side, id);
-      extendedTransparentScreen.show()
-    }
-    getSettings
+    // Get default name from file path
+    let splitter = os.platform() == 'darwin' ? "/" : "\\"
+    let defaultName = file.slice(0, -4).split(splitter).pop()
+
+    // Create a simple input dialog window - calculate center position
+    const { width: screenWidth, height: screenHeight } = electron.screen.getPrimaryDisplay().workAreaSize
+    const promptWidth = 400
+    const promptHeight = 200
+
+    let promptWindow = new BrowserWindow({
+      width: promptWidth,
+      height: promptHeight,
+      x: Math.floor((screenWidth - promptWidth) / 2),
+      y: Math.floor((screenHeight - promptHeight) / 2),
+      modal: true,
+      show: false,
+      frame: false,
+      resizable: false,
+      alwaysOnTop: true,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false
+      }
+    })
+
+    promptWindow.loadFile(path.join(__dirname, 'prompt', 'index.html'))
+
+    promptWindow.once('ready-to-show', () => {
+      promptWindow.show()
+      promptWindow.webContents.send('prompt-init', {
+        title: 'Name this sound:',
+        defaultName: defaultName,
+        side: side,
+        id: id,
+        promptType: 'sound'
+      })
+    })
+
+    ipcMain.once('prompt-response', (event, name, respSide, respId, promptType) => {
+      promptWindow.close()
+      if (name) {
+        var temp = name.replace("\'", "");
+        eval(`${respSide}Bar.webContents.send('return-prompt', '${temp}', '${respId}')`)
+        getSettings()
+          .then(function (settings) {
+            eval(`settings.${respSide}.${respId}text = '${temp}'`)
+            saveSettings(settings)
+          })
+          .catch(function (error) {
+            console.log(error)
+          })
+      }
+    })
+
+    // Save the sound file path
+    getSettings()
       .then(function (settings) {
         eval(`settings.${side}.${id}sound = ${String.raw`file`}`)
         saveSettings(settings)
@@ -231,7 +296,7 @@ function createWindow () {
     if(name) {
       var temp = name.replace("\'", "");
       eval(`${side}Bar.webContents.send('return-prompt', '${temp}', '${id}')`)
-      getSettings
+      getSettings()
         .then(function (settings) {
           eval(`settings.${side}.${id}text = '${temp}'`)  //works because it is not an address
           saveSettings(settings)
@@ -243,7 +308,62 @@ function createWindow () {
   })
 
   ipcMain.on('change-image', (event, file, side, id) => {
-    getSettings
+    // Get default name from file path
+    let splitter = os.platform() == 'darwin' ? "/" : "\\"
+    let defaultName = file.slice(0, -4).split(splitter).pop()
+
+    // Create a simple input dialog window - calculate center position
+    const { width: imgScreenWidth, height: imgScreenHeight } = electron.screen.getPrimaryDisplay().workAreaSize
+    const imgPromptWidth = 400
+    const imgPromptHeight = 200
+
+    let promptWindow = new BrowserWindow({
+      width: imgPromptWidth,
+      height: imgPromptHeight,
+      x: Math.floor((imgScreenWidth - imgPromptWidth) / 2),
+      y: Math.floor((imgScreenHeight - imgPromptHeight) / 2),
+      modal: true,
+      show: false,
+      frame: false,
+      resizable: false,
+      alwaysOnTop: true,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false
+      }
+    })
+
+    promptWindow.loadFile(path.join(__dirname, 'prompt', 'index.html'))
+
+    promptWindow.once('ready-to-show', () => {
+      promptWindow.show()
+      promptWindow.webContents.send('prompt-init', {
+        title: 'Name this image:',
+        defaultName: defaultName,
+        side: side,
+        id: id,
+        promptType: 'image'
+      })
+    })
+
+    ipcMain.once('prompt-response', (event, name, respSide, respId, promptType) => {
+      promptWindow.close()
+      if (name) {
+        var temp = name.replace("\'", "");
+        eval(`${respSide}Bar.webContents.send('return-prompt', '${temp}', '${respId}')`)
+        getSettings()
+          .then(function (settings) {
+            eval(`settings.${respSide}.${respId}text = '${temp}'`)
+            saveSettings(settings)
+          })
+          .catch(function (error) {
+            console.log(error)
+          })
+      }
+    })
+
+    // Save the image file path
+    getSettings()
       .then(function (settings) {
         eval(`settings.${side}.${id}image = ${String.raw`file`}`)
         saveSettings(settings)
@@ -254,7 +374,7 @@ function createWindow () {
   })
 
   ipcMain.on('toggle-image', (event, isOn) => {
-    getSettings
+    getSettings()
       .then(function (settings) {
         settings.bottom.isImage = isOn
         saveSettings(settings)
@@ -309,7 +429,7 @@ function createWindow () {
   })
 
   ipcMain.on('save-keyMap', (event, side, keyMap) => {
-    getSettings
+    getSettings()
       .then(function (settings) {
         eval(`settings.${side}.keymap = ${keyMap}`)
         saveSettings(settings)
@@ -325,7 +445,7 @@ function createWindow () {
           leftBar.webContents.send('update-keymap', settings.top.keymap)
           rightBar.webContents.send('update-keymap', settings.top.keymap)
         }
-        
+
       })
       .catch(function (error) {
         console.log(error)
@@ -333,7 +453,7 @@ function createWindow () {
   })
 
   ipcMain.on('clean-keyMap', (event, side, keyMap) => {
-    getSettings
+    getSettings()
       .then(function (settings) {
         eval(`settings.${side}.keymap = ${keyMap}`)
         saveSettings(settings)
@@ -350,7 +470,7 @@ function createWindow () {
     else {
       eval(`${side}Bar.hide()`)
     }
-    getSettings
+    getSettings()
       .then(function (settings) {
         eval(`settings.bottom.${side} = ${isChecked}`)
         saveSettings(settings)
@@ -362,7 +482,7 @@ function createWindow () {
 
   ipcMain.on('minimize', (event) => {
     if (leftBar.isVisible()) leftBar.hide()
-    if (rightBar.isVisible()) rightBar.hide()  
+    if (rightBar.isVisible()) rightBar.hide()
     if (topBar.isVisible()) topBar.hide()
     bottomBar.minimize()
   })
@@ -372,7 +492,7 @@ function createWindow () {
   })
 
   bottomBar.on('restore', () => {
-    getSettings
+    getSettings()
       .then(function (settings) {
         if (settings.bottom.left) leftBar.show()
         if (settings.bottom.right) rightBar.show()
@@ -384,43 +504,60 @@ function createWindow () {
   })
 }
 
-let getSettings = new Promise(
-    function (resolve, reject) {
-      storage.get('soundBoardSettings', function(error, data) {
-        if (isEmpty(data)) reject(new Error('DB does not exist!'))
-        else if (error) reject(error)
-        else resolve(data)
-      })
-    }
-)
+function getSettings() {
+  return new Promise(function (resolve, reject) {
+    storage.get('soundBoardSettings', function(error, data) {
+      if (error) reject(error)
+      else if (isEmpty(data)) reject(new Error('DB does not exist!'))
+      else resolve(data)
+    })
+  })
+}
 
 function saveSettings(toSave) {
-  storage.set('soundBoardSettings', toSave, function(error) {
-    if (error) throw error
-  });
+  return new Promise(function (resolve, reject) {
+    storage.set('soundBoardSettings', toSave, function(error) {
+      if (error) reject(error)
+      else resolve()
+    })
+  })
+}
+
+function sendInitialize(winName, win, settings) {
+  // Check if DOM is already ready, if so send immediately
+  // Otherwise wait for dom-ready event
+  if (win.webContents.isLoading()) {
+    win.webContents.once('dom-ready', () => {
+      win.webContents.send('initialize', settings)
+    })
+  } else {
+    win.webContents.send('initialize', settings)
+  }
 }
 
 function initializeDB() {
-  getSettings
-    .then(function (resolve) {
-      leftBar.webContents.once('dom-ready', () => {
-        leftBar.webContents.send('initialize', resolve.left)
-      })
-      rightBar.webContents.once('dom-ready', () => {
-        rightBar.webContents.send('initialize', resolve.right)
-      })
-      topBar.webContents.once('dom-ready', () => {
-        topBar.webContents.send('initialize', resolve.top)
-      })
-      bottomBar.webContents.once('dom-ready', () => {
-        bottomBar.webContents.send('initialize', resolve.bottom)
-      })
+  getSettings()
+    .then(function (settings) {
+      sendInitialize('leftBar', leftBar, settings.left || {})
+      sendInitialize('rightBar', rightBar, settings.right || {})
+      sendInitialize('topBar', topBar, settings.top || {})
+      sendInitialize('bottomBar', bottomBar, settings.bottom || {})
     })
     .catch(function (error) {
-      console.log("Did not detect DB, creating a new one and quitting. Here is actual error: ", error)
-      saveSettings({left: {}, right: {}, top: {}, bottom: {isImage:true, left:true, top:true, right :true}})
-      app.quit()
-      app.relaunch()
+      const defaultSettings = {
+        left: {},
+        right: {},
+        top: {},
+        bottom: {isImage: true, left: true, top: true, right: true}
+      }
+      saveSettings(defaultSettings).then(() => {
+        sendInitialize('leftBar', leftBar, defaultSettings.left)
+        sendInitialize('rightBar', rightBar, defaultSettings.right)
+        sendInitialize('topBar', topBar, defaultSettings.top)
+        sendInitialize('bottomBar', bottomBar, defaultSettings.bottom)
+      }).catch(err => {
+        console.error("[DEBUG] Failed to save default settings:", err)
+      })
     })
 }
 
@@ -442,32 +579,43 @@ app.on('activate', function () {
   if (transparentScreen === null) createWindow()
 })
 
-ioHook.on('keydown', event => {
-  if (!transparentScreen.isVisible()) {  //maybe I don't want this, no keymap while image is on
-    leftBar.webContents.send('keyDown', event.rawcode)
-    rightBar.webContents.send('keyDown', event.rawcode)
-    topBar.webContents.send('keyDown', event.rawcode)
-    bottomBar.webContents.send('keyDown')
+// Global keyboard hook using uiohook-napi
+// Track pressed keys to prevent key repeat from triggering multiple plays
+const pressedKeys = new Set()
+
+uIOhook.on('keydown', event => {
+  // Escape key (keycode 1) stops all audio
+  if (event.keycode === 1) {
+    if (leftBar) leftBar.webContents.send('stop-all-audio')
+    if (rightBar) rightBar.webContents.send('stop-all-audio')
+    if (topBar) topBar.webContents.send('stop-all-audio')
+    return
+  }
+
+  // Ignore key repeat (key already pressed)
+  if (pressedKeys.has(event.keycode)) {
+    return
+  }
+  pressedKeys.add(event.keycode)
+
+  if (transparentScreen && !transparentScreen.isVisible()) {
+    if (leftBar) leftBar.webContents.send('keyDown', event.keycode)
+    if (rightBar) rightBar.webContents.send('keyDown', event.keycode)
+    if (topBar) topBar.webContents.send('keyDown', event.keycode)
+    if (bottomBar) bottomBar.webContents.send('keyDown')
   }
 })
 
-ioHook.start();
+uIOhook.on('keyup', event => {
+  pressedKeys.delete(event.keycode)
+})
 
-function checkMap(keycode, settings) {
-  if (settins.keyMaps) {
-    for (var [id, code] of settings.keyMaps) {
-      if (value == event.code) {
+uIOhook.start()
 
-        return
-      }
-    }
-  }
+// Clean up on app quit
+app.on('before-quit', () => {
+  uIOhook.stop()
+})
 
-  settings.keyMaps = new Map()
-
-  leftBar.webContents.send('keyDown', event.keycode)
-  rightBar.webContents.send('keyDown', event.keycode)
-  topBar.webContents.send('keyDown', event.keycode)
-}
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Name this item</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #2a2a2a;
+      color: white;
+      margin: 0;
+      border: 2px solid #555;
+      box-sizing: border-box;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h3 {
+      margin-top: 0;
+    }
+    input { 
+      width: calc(100% - 22px); 
+      padding: 10px; 
+      font-size: 16px; 
+      margin: 10px 0; 
+      border: 1px solid #555;
+      background: #3a3a3a;
+      color: white;
+    }
+    input:focus {
+      outline: none;
+      border-color: #0078d4;
+    }
+    .buttons {
+      text-align: right; 
+      margin-top: 15px;
+    }
+    button { 
+      padding: 8px 20px; 
+      margin-left: 10px; 
+      cursor: pointer;
+      border: none;
+      font-size: 14px;
+    }
+    button.ok {
+      background: #0078d4;
+      color: white;
+    }
+    button.cancel {
+      background: #555;
+      color: white;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <h3 id="title">Name this item:</h3>
+  <input type="text" id="name" autofocus>
+  <div class="buttons">
+    <button class="cancel" id="cancelBtn">Cancel</button>
+    <button class="ok" id="okBtn">OK</button>
+  </div>
+  <script>
+    const { ipcRenderer } = require('electron')
+    
+    let side, id, promptType
+    
+    ipcRenderer.on('prompt-init', (event, data) => {
+      document.getElementById('title').textContent = data.title
+      document.getElementById('name').value = data.defaultName
+      document.getElementById('name').select()
+      side = data.side
+      id = data.id
+      promptType = data.promptType
+    })
+    
+    function submitName() {
+      const name = document.getElementById('name').value
+      ipcRenderer.send('prompt-response', name, side, id, promptType)
+    }
+    
+    function cancel() {
+      ipcRenderer.send('prompt-response', null, side, id, promptType)
+    }
+    
+    document.getElementById('okBtn').addEventListener('click', submitName)
+    document.getElementById('cancelBtn').addEventListener('click', cancel)
+    
+    document.getElementById('name').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitName()
+      if (e.key === 'Escape') cancel()
+    })
+  </script>
+</body>
+</html>
+

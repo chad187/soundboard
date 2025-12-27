@@ -1,13 +1,18 @@
 {
-  "name": "Soundboard",
-  "version": "0.0.1",
-  "description": "tool for teachers",
+  "name": "soundboard",
+  "productName": "Soundboard",
+  "version": "1.0.0",
+  "description": "Soundboard tool for teachers",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --asar.unpackDir='node_modules/iohook' --out=release-builds/mac",
-    "package-win": "electron-packager . --overwrite --prune=true --asar.unpackDir='node_modules/iohook' --out=release-builds/pc",
-    "package-linux": "electron-packager . --overwrite --asar=false --platform=linux --arch=x64 --prune=true --out=release-builds",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds/mac",
+    "package-win": "electron-packager . --overwrite --prune=true --out=release-builds/pc",
+    "package-linux": "electron-packager . --overwrite --platform=linux --arch=x64 --prune=true --out=release-builds",
     "package-all": "yarn package-mac && yarn package-win"
   },
   "repository": "https://github.com/electron/electron-quick-start",
@@ -15,36 +20,58 @@
     "Soundboard",
     "teaching"
   ],
-  "author": "GitHub",
+  "author": "Your Name",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^5.0.8",
-    "electron-packager": "^14.0.4"
+    "electron": "^28.0.0",
+    "electron-builder": "^25.1.8",
+    "electron-packager": "^17.1.2"
   },
   "dependencies": {
-    "dialogs": "^2.0.1",
-    "electron-json-storage": "^4.1.6",
-    "iohook": "^0.5.1",
-    "os-keycode": "^1.0.0",
-    "webrtc-adapter": "^4.2.2"
+    "electron-json-storage": "^4.6.0",
+    "uiohook-napi": "^1.5.4"
   },
-  "cmake-js": {
-    "runtime": "electron",
-    "runtimeVersion": "1.4.7"
+  "build": {
+    "appId": "com.soundboard.app",
+    "productName": "Soundboard",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!release-builds/**",
+      "!dist/**",
+      "!.git/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
-  "iohook": {
-    "targets": [
-      "node-64",
-      "electron-70"
-    ],
-    "platforms": [
-      "win32",
-      "darwin",
-      "linux"
-    ],
-    "arches": [
-      "x64",
-      "ia32"
-    ]
-  }
+  "packageManager": "yarn@4.9.2+sha512.1fc009bc09d13cfd0e19efa44cbfc2b9cf6ca61482725eb35bbc5e257e093ebf4130db6dfe15d604ff4b79efd8e1e8e99b25fa7d0a6197c9f9826358d4d65c3c"
 }
