@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soundboard - Launcher</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    h1 { margin-bottom: 20px; }
+    .info { color: #888; margin-bottom: 30px; text-align: center; max-width: 500px; }
+    .screen-select { margin-bottom: 20px; }
+    .screen-select label { margin-right: 10px; }
+    .screen-select select { padding: 8px; font-size: 16px; }
+    .launch-btn {
+      padding: 20px 40px;
+      font-size: 24px;
+      background: #4a9eff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .launch-btn:hover { background: #3a8eef; }
+    .launch-btn:disabled { background: #666; cursor: not-allowed; }
+    .warning {
+      margin-top: 20px;
+      padding: 15px;
+      background: #442200;
+      border: 1px solid #884400;
+      border-radius: 8px;
+      max-width: 500px;
+      text-align: center;
+    }
+    .status { margin-top: 20px; color: #4a9eff; }
+  </style>
+</head>
+<body>
+  <h1>🔊 Soundboard Launcher</h1>
+  <p class="info">
+    This will open 4 panel windows positioned around your screen.
+    The center area stays clear - images appear briefly then disappear.
+  </p>
+  
+  <div class="warning">
+    ⚠️ Please <strong>allow popups</strong> for this site when prompted.<br>
+    The panels open as separate windows.
+  </div>
+  
+  <div class="screen-select">
+    <label for="panelSize">Panel Size:</label>
+    <select id="panelSize">
+      <option value="100">Small (100px)</option>
+      <option value="150" selected>Medium (150px)</option>
+      <option value="200">Large (200px)</option>
+    </select>
+  </div>
+  
+  <button class="launch-btn" id="launchBtn">🚀 Launch Soundboard</button>
+  <p class="status" id="status"></p>
+  
+  <script>
+    const channel = new BroadcastChannel('soundboard-channel');
+    let panelWindows = {};
+    
+    document.getElementById('launchBtn').addEventListener('click', launchPanels);
+    
+    function launchPanels() {
+      const size = parseInt(document.getElementById('panelSize').value);
+      const sw = window.screen.availWidth;
+      const sh = window.screen.availHeight;
+      const sx = window.screen.availLeft || 0;
+      const sy = window.screen.availTop || 0;
+      
+      // Close any existing panels
+      Object.values(panelWindows).forEach(w => w && !w.closed && w.close());
+      
+      // Panel configurations: position, left, top, width, height
+      const panels = {
+        top:    { l: sx + size, t: sy, w: sw - size * 2, h: size },
+        bottom: { l: sx + size, t: sy + sh - size, w: sw - size * 2, h: size },
+        left:   { l: sx, t: sy, w: size, h: sh },
+        right:  { l: sx + sw - size, t: sy, w: size, h: sh }
+      };
+      
+      let opened = 0;
+      for (const [pos, p] of Object.entries(panels)) {
+        const features = `left=${p.l},top=${p.t},width=${p.w},height=${p.h},menubar=no,toolbar=no,location=no,status=no,resizable=yes`;
+        const url = `panel.html?position=${pos}&size=${size}`;
+        panelWindows[pos] = window.open(url, `panel-${pos}`, features);
+        if (panelWindows[pos]) opened++;
+      }
+      
+      document.getElementById('status').textContent = 
+        opened === 4 ? '✅ All panels opened!' : `⚠️ Only ${opened}/4 panels opened. Check popup blocker.`;
+    }
+    
+    // Listen for image requests from panels
+    channel.onmessage = (event) => {
+      if (event.data.type === 'show-center-image') {
+        showCenterImage(event.data.url);
+      }
+    };
+    
+    function showCenterImage(url) {
+      const size = parseInt(document.getElementById('panelSize').value);
+      const sw = window.screen.availWidth;
+      const sh = window.screen.availHeight;
+      const sx = window.screen.availLeft || 0;
+      const sy = window.screen.availTop || 0;
+      
+      const centerW = sw - size * 2;
+      const centerH = sh - size * 2;
+      const centerL = sx + size;
+      const centerT = sy + size;
+      
+      const features = `left=${centerL},top=${centerT},width=${centerW},height=${centerH},menubar=no,toolbar=no,location=no,status=no`;
+      const centerWin = window.open(`center.html?url=${encodeURIComponent(url)}`, 'center-display', features);
+      
+      // Auto-close after 2 seconds
+      setTimeout(() => {
+        if (centerWin && !centerWin.closed) centerWin.close();
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soundboard Panel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body {
+      background: #2a2a2a;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+    }
+    body.vertical { flex-direction: column; }
+    .sound-btn {
+      background: #333;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid #444;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      transition: opacity 0.2s;
+    }
+    .sound-btn:hover { border-color: #666; }
+    .sound-btn:active { transform: scale(0.98); }
+    .sound-btn .label {
+      background: rgba(0,0,0,0.6);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      text-align: center;
+      max-width: 90%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .sound-btn .keymap {
+      background: rgba(255,0,0,0.6);
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 9px;
+      margin-top: 2px;
+      min-height: 14px;
+    }
+  </style>
+</head>
+<body>
+  <script type="module">
+    import { Storage } from './js/storage.js';
+    
+    const params = new URLSearchParams(window.location.search);
+    const position = params.get('position') || 'left';
+    const size = parseInt(params.get('size')) || 150;
+    const channel = new BroadcastChannel('soundboard-channel');
+    
+    const isVertical = position === 'left' || position === 'right';
+    if (isVertical) document.body.classList.add('vertical');
+    
+    const buttonCount = isVertical ? 8 : 12;
+    
+    async function init() {
+      const settings = await Storage.getSettings();
+      const panelSettings = settings[position] || {};
+      const keymap = new Map(panelSettings.keymap || []);
+      
+      for (let i = 0; i < buttonCount; i++) {
+        const btn = document.createElement('div');
+        btn.className = 'sound-btn';
+        btn.id = `${position}-${i}`;
+        btn.dataset.panel = position;
+        btn.dataset.id = i;
+        
+        if (isVertical) {
+          btn.style.width = '100%';
+          btn.style.height = `${100 / buttonCount}%`;
+        } else {
+          btn.style.width = `${100 / buttonCount}%`;
+          btn.style.height = '100%';
+        }
+        
+        const label = document.createElement('span');
+        label.className = 'label';
+        const keymapSpan = document.createElement('span');
+        keymapSpan.className = 'keymap';
+        
+        // Load button settings
+        const btnSettings = panelSettings[i] || {};
+        label.textContent = btnSettings.text || '';
+        
+        if (btnSettings.image) {
+          const blob = await Storage.getFile(btnSettings.image);
+          if (blob) {
+            btn.style.backgroundImage = `url('${URL.createObjectURL(blob)}')`;
+            btn.dataset.imageId = btnSettings.image;
+          }
+        }
+        if (btnSettings.sound) {
+          btn.dataset.soundId = btnSettings.sound;
+        }
+        if (keymap.has(String(i))) {
+          keymapSpan.textContent = keyCodeToLetter(keymap.get(String(i)));
+        }
+        
+        btn.appendChild(label);
+        btn.appendChild(keymapSpan);
+        btn.addEventListener('click', handleClick);
+        document.body.appendChild(btn);
+        
+        // Drag and drop
+        btn.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+        btn.addEventListener('drop', e => handleDrop(e, btn));
+      }
+    }
+    
+    async function handleClick(e) {
+      const btn = e.currentTarget;
+      
+      // Play sound
+      if (btn.dataset.soundId) {
+        const blob = await Storage.getFile(btn.dataset.soundId);
+        if (blob) {
+          const audio = new Audio(URL.createObjectURL(blob));
+          audio.play();
+        }
+      }
+      
+      // Show image
+      if (btn.dataset.imageId) {
+        const blob = await Storage.getFile(btn.dataset.imageId);
+        if (blob) {
+          channel.postMessage({ type: 'show-center-image', url: URL.createObjectURL(blob) });
+        }
+      }
+    }
+    
+    async function handleDrop(e, btn) {
+      e.preventDefault();
+      const files = e.dataTransfer.files;
+      const images = ['gif','jpg','jpeg','png','bmp'];
+      const sounds = ['mp3','wma','wav','webm','ogg'];
+      
+      for (const file of files) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        const id = btn.dataset.id;
+        
+        if (images.includes(ext)) {
+          const fileId = `${position}-${id}-image-${Date.now()}`;
+          await Storage.saveFile(fileId, file, 'image');
+          await Storage.updateButtonSettings(position, id, 'image', fileId);
+          btn.style.backgroundImage = `url('${URL.createObjectURL(file)}')`;
+          btn.dataset.imageId = fileId;
+        } else if (sounds.includes(ext)) {
+          const fileId = `${position}-${id}-audio-${Date.now()}`;
+          await Storage.saveFile(fileId, file, 'audio');
+          await Storage.updateButtonSettings(position, id, 'sound', fileId);
+          btn.dataset.soundId = fileId;
+          const name = prompt('Give it a name', file.name.slice(0,-4));
+          if (name) {
+            btn.querySelector('.label').textContent = name;
+            await Storage.updateButtonSettings(position, id, 'text', name);
+          }
+        }
+      }
+    }
+    
+    function keyCodeToLetter(kc) {
+      if (kc >= 65 && kc <= 90) return String.fromCharCode(kc);
+      if (kc >= 48 && kc <= 57) return String.fromCharCode(kc);
+      return `K${kc}`;
+    }
+    
+    init();
+  </script>
+</body>
+</html>
+

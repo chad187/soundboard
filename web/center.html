@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Display</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    #image {
+      max-width: 95%;
+      max-height: 95%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <img id="image" src="" alt="Display">
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get('url');
+    
+    if (url) {
+      document.getElementById('image').src = decodeURIComponent(url);
+    }
+    
+    // Click to close immediately
+    document.body.addEventListener('click', () => window.close());
+    
+    // Escape to close
+    document.addEventListener('keydown', (e) => {
+      if (e.keyCode === 27) window.close();
+    });
+  </script>
+</body>
+</html>
+
