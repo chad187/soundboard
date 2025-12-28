@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soundboard - Extended Display</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+
+    body.dark-bg {
+      background: rgba(0, 0, 0, 0.9);
+    }
+    
+    #image {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      display: none;
+    }
+    
+    #instructions {
+      color: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    
+    #instructions h1 {
+      margin-bottom: 10px;
+    }
+    
+    #instructions p {
+      opacity: 0.7;
+    }
+    
+    #instructions.hidden {
+      display: none;
+    }
+    
+    #toggleBg {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px 15px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    #toggleBg:hover {
+      background: rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <button id="toggleBg">Toggle Background</button>
+  
+  <div id="instructions">
+    <h1>Extended Display</h1>
+    <p>Drag this window to your extended screen.</p>
+    <p>Images will appear here when triggered from the main app.</p>
+    <p>Click "Toggle Background" to make the background transparent.</p>
+  </div>
+  
+  <img id="image" src="" alt="Display">
+  
+  <script>
+    const channel = new BroadcastChannel('soundboard-channel');
+    const image = document.getElementById('image');
+    const instructions = document.getElementById('instructions');
+    const toggleBg = document.getElementById('toggleBg');
+    let imageTimeout = null;
+
+    // Listen for messages from main app
+    channel.onmessage = (event) => {
+      const { type, url } = event.data;
+
+      if (type === 'show-image') {
+        // Clear any existing timeout
+        if (imageTimeout) {
+          clearTimeout(imageTimeout);
+        }
+
+        image.src = url;
+        image.style.display = 'block';
+        instructions.classList.add('hidden');
+
+        // Auto-hide after 2 seconds
+        imageTimeout = setTimeout(() => {
+          hideImageNow();
+        }, 2000);
+      } else if (type === 'hide-image') {
+        if (imageTimeout) {
+          clearTimeout(imageTimeout);
+          imageTimeout = null;
+        }
+        image.style.display = 'none';
+        image.src = '';
+        instructions.classList.remove('hidden');
+      }
+    };
+    
+    // Toggle background transparency
+    toggleBg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.body.classList.toggle('dark-bg');
+    });
+
+    // Click anywhere to hide image
+    document.body.addEventListener('click', (e) => {
+      if (e.target === toggleBg) return;
+      hideImageNow();
+    });
+
+    image.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideImageNow();
+    });
+
+    function hideImageNow() {
+      if (imageTimeout) {
+        clearTimeout(imageTimeout);
+        imageTimeout = null;
+      }
+      image.style.display = 'none';
+      image.src = '';
+      instructions.classList.remove('hidden');
+      channel.postMessage({ type: 'image-hidden' });
+    }
+    
+    // Keyboard shortcut to hide
+    document.addEventListener('keydown', (e) => {
+      if (e.keyCode === 27) { // Escape
+        hideImageNow();
+      }
+    });
+  </script>
+</body>
+</html>
+
