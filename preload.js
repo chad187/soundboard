@@ -42,6 +42,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return fileName
   },
 
+  logToTerminal: (msg) => ipcRenderer.send('print-this', msg),
+
   // Get platform info
   getPlatform: () => os.platform(),
 
@@ -88,4 +90,3 @@ contextBridge.exposeInMainWorld('keyCodeUtils', {
     return keyCodeMap[keycode] || `Key${keycode}`
   }
 })
-

@@ -85,6 +85,7 @@ function dropHandler(e) {
 }
 
 // Expose playMedia to global scope for onclick handlers
+//if it is a click it just fires staight to here and never gets blocked. Why? Because the keydown event is only for the window, not for the individual elements. So clicks will always trigger playMedia, but key presses will only trigger checkMapPlay if the window is focused and not in key mapping mode. This allows for both mouse and keyboard interactions without interference.
 window.playMedia = function(drop) {
 	console.log('[DEBUG leftBar] playMedia called, drop:', drop, 'isSample:', isSample, 'isKeyMap:', isKeyMap)
 	let pressed = document.getElementById(drop)
@@ -126,16 +127,19 @@ window.playMedia = function(drop) {
   	window.electronAPI.send('isSelected', 'left')
   }
 	else {
-		window.electronAPI.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "left", drop)
-	  if (pressed.src && pressed.src !== window.location.href) {
-		  let audio = new Audio(pressed.src)
-		  playingAudio.push(audio)
-		  audio.onended = () => {
-			  let idx = playingAudio.indexOf(audio)
-			  if (idx > -1) playingAudio.splice(idx, 1)
-		  }
-		  audio.play().catch(err => console.log('Audio play error:', err))
-	  }
+		if (pressed.style.backgroundImage != '') {
+			window.electronAPI.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "left", drop)
+		}
+		if (pressed.src && pressed.src !== window.location.href) {
+			killAllAudio()
+			let audio = new Audio(pressed.src)
+			playingAudio.push(audio)
+			audio.onended = () => {
+				let idx = playingAudio.indexOf(audio)
+				if (idx > -1) playingAudio.splice(idx, 1)
+			}
+			audio.play().catch(err => console.log('Audio play error:', err))
+		}
 	}
 }
 
@@ -144,6 +148,7 @@ function completedAudio(audioSource) {
 }
 
 function killAllAudio() {
+	window.electronAPI.logToTerminal('Stopping all audio')
 	playingAudio.forEach((value, index, array) => {
 		value.pause()
 		value.currentTime = 0
@@ -221,7 +226,7 @@ function checkMapAdd (keycode) {
 	span.data = keyCodeToLetter(keycode)
 	}
 }
-
+//if it is a key press it comes through here and gets blocked sometimes
 function checkMapPlay(keycode) {
 	if (keycode == 27 || keycode == 53) killAllAudio()
 	else {

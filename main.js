@@ -203,6 +203,10 @@ function createWindow () {
     transparentScreen = null
   })
 
+  ipcMain.on('print-this', (event, msg) => {
+    console.log(`[LeftBar Log]: ${msg}`);
+  });
+
   ipcMain.on('show-image', (event, file) => {
     getSettings()
       .then(function (settings) {
@@ -594,11 +598,13 @@ uIOhook.on('keydown', event => {
 
   // Ignore key repeat (key already pressed)
   if (pressedKeys.has(event.keycode)) {
+    console.log('[DEBUG] Key repeat detected, ignoring:', event.keycode)
     return
   }
   pressedKeys.add(event.keycode)
 
   if (transparentScreen && !transparentScreen.isVisible()) {
+    console.log(`[${new Date().toLocaleTimeString()}.${new Date().getMilliseconds()}] [DEBUG] Sending keyDown to all bars: ${event.keycode}`);
     if (leftBar) leftBar.webContents.send('keyDown', event.keycode)
     if (rightBar) rightBar.webContents.send('keyDown', event.keycode)
     if (topBar) topBar.webContents.send('keyDown', event.keycode)

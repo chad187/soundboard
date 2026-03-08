@@ -118,16 +118,19 @@ window.playMedia = function(drop) {
   	window.electronAPI.send('isSelected', 'right')
   }
 	else {
-		window.electronAPI.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "right", drop)
-	  if (pressed.src && pressed.src !== window.location.href) {
-		  let audio = new Audio(pressed.src)
-		  playingAudio.push(audio)
-		  audio.onended = () => {
-			  let idx = playingAudio.indexOf(audio)
-			  if (idx > -1) playingAudio.splice(idx, 1)
-		  }
-		  audio.play().catch(err => console.log('Audio play error:', err))
-	  }
+		if (pressed.style.backgroundImage != '') {
+			window.electronAPI.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "right", drop)
+		}
+		if (pressed.src && pressed.src !== window.location.href) {
+			killAllAudio()
+			let audio = new Audio(pressed.src)
+			playingAudio.push(audio)
+			audio.onended = () => {
+				let idx = playingAudio.indexOf(audio)
+				if (idx > -1) playingAudio.splice(idx, 1)
+			}
+			audio.play().catch(err => console.log('Audio play error:', err))
+		}
 	}
 }
 

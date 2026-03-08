@@ -118,16 +118,19 @@ window.playMedia = function(drop) {
   	window.electronAPI.send('isSelected', 'top')
   }
 	else {
-		window.electronAPI.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "top", drop)
-	  if (pressed.src && pressed.src !== window.location.href) {
-		  let audio = new Audio(pressed.src)
-		  playingAudio.push(audio)
-		  audio.onended = () => {
-			  let idx = playingAudio.indexOf(audio)
-			  if (idx > -1) playingAudio.splice(idx, 1)
-		  }
-		  audio.play().catch(err => console.log('Audio play error:', err))
-	  }
+		if (pressed.style.backgroundImage != '') {
+			window.electronAPI.send('show-image', pressed.style.backgroundImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''), "top", drop)
+		}
+		if (pressed.src && pressed.src !== window.location.href) {
+			killAllAudio()
+			let audio = new Audio(pressed.src)
+			playingAudio.push(audio)
+			audio.onended = () => {
+				let idx = playingAudio.indexOf(audio)
+				if (idx > -1) playingAudio.splice(idx, 1)
+			}
+			audio.play().catch(err => console.log('Audio play error:', err))
+		}
 	}
 }
 
@@ -136,7 +139,6 @@ function completedAudio(audioSource) {
 }
 
 function killAllAudio() {
-	console.log('[DEBUG topBar] Stopping all audio')
 	playingAudio.forEach((value, index, array) => {
 		value.pause()
 		value.currentTime = 0
